@@ -1,0 +1,95 @@
+import time
+
+import numpy as np
+
+from bin_x.core.clustering.distance_matrix import find_m_nearest_idx
+from bin_x.core.clustering.hull_distance import (
+    affine_hull_distance,
+    convex_hull_distance,
+)
+
+
+def _calculate_distance(x: np.ndarray, mat_p: np.ndarray, qp_solver: str, metric: str) -> float:
+    """
+    Function to find the distance from point x to a polytope defined by set P.
+    Uses the quadratic optimization to find the distance.
+
+    :param x: Query point.
+    :param mat_p: Matrix with polytope points.
+    :param qp_solver: Quadratic program solver algorithm.
+    :param metric: Metric to use.
+    :return: The distance from the query point to the polytope.
+    """
+
+    if metric == "convex":
+        return convex_hull_distance(x, mat_p, solver=qp_solver)
+    if metric == "affine":
+        return affine_hull_distance(x, mat_p, solver=qp_solver)
+    raise NotImplementedError(f"Metric {metric} not implemented")
+
+
+def fit_cluster(
+    num_samples: int,
+    samples: np.ndarray,
+    num_clusters: int,
+    initial_bins: np.ndarray,
+    distance_matrix: np.ndarray,
+    num_neighbors: int = 15,
+    max_iterations: int = 10,
+    metric: str = "convex",
+    qp_solver: str = "quadprog",
+) -> np.ndarray:
+    """
+    Perform the Cevikalp et. al. 2019 convex hull binning algorithm
+    specialized for metagenomic binning.
+
+    :param num_samples: Number of samples in given dataset.
+    :param samples: Dataset points.
+    :param num_clusters: Number of clusters.
+    :param num_neighbors: Number of neighbors to consider for polytope.
+    :param distance_matrix: Pre-calculated distance matrix.
+    :param initial_bins: Initial bin vector. Use -1 for un-binned.
+    :param max_iterations: Number of maximum iterations to perform.
+    :param metric: Polytope distance matrix (convex/affine)
+    :param qp_solver: Quadratic programming problem solver. (quadprog/cvxopt)
+    :return: Final binning result.
+    """
+
+    curr_bins: np.ndarray = initial_bins.copy()
+
+    for i_iter in range(max_iterations):
+        start_timestamp = time.time()
+
+        for i, i_sample in enumerate(np.random.permutation(num_samples)):
+            print(f"Iteration {i_iter + 1} progress: {i}/{num_samples}", end="\r")
+            min_distance: float = np.inf
+            min_cluster: int = curr_bins[i_sample]
+
+            for c in range(num_clusters):
+                # Determine the m nearest samples of xi from cluster c
+                curr_bin_point_idx: np.ndarray = np.where(curr_bins == c)[0]
+                nearest_idx = find_m_nearest_idx(num_neighbors, i_sample, distance_matrix, curr_bin_point_idx)
+                # Find convex hull distance
+                distance = _calculate_distance(samples[i_sample], samples[nearest_idx], qp_solver, metric)
+                if min_distance > distance:
+                    min_distance, min_cluster = distance, c
+
+            curr_bins[i_sample] = min_cluster  # Assign xi to cluster with smallest distance
+
+        end_timestamp = time.time()
+        print(f"Iteration {i_iter + 1} took {end_timestamp - start_timestamp}s")
+
+        # If the assignments did not change, break
+        diff_bins = initial_bins != curr_bins
+        if not np.any(diff_bins):
+            print("No changes done with previous iteration... Stopping at iteration", i_iter + 1)
+            break
+        print(f"Points changing cluster : {np.average(diff_bins) * 100}%")
+        print()
+
+        initial_bins = curr_bins
+        curr_bins = curr_bins.copy()
+
+    else:
+        print("Exit due to max iteration limit")
+    return curr_bins

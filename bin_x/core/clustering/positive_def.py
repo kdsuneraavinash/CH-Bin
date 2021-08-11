@@ -1,4 +1,6 @@
 """
+Module containing functions relating to positive definite matrices.
+
 Quadratic programming using quadprog requires calculating a positive definite matrix for a given matrix A.
 This solution provides the implementation to find the nearest positive definite matrix.
 Implementation derived from

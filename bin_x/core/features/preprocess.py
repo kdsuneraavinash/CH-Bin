@@ -6,13 +6,13 @@ Example,contig splitting, filtering short contigs.
 """
 
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, Generator, List
 
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 
 
-def _generate_split_string(string: str, split_len: int = 10000) -> str:
+def _generate_split_string(string: str, split_len: int = 10000) -> Generator[str, Any, None]:
     """
     Generator to generate sub strings of given length.
     Note that the sub strings are guaranteed to be at least split_len

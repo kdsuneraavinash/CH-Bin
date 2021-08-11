@@ -4,10 +4,8 @@ import click
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
 
-from bin_x.cli.utils import handle_error
+from bin_x.cli.utils import handle_error, reduce_dimensions_to_2d
 from bin_x.core.config import USER_CONFIG
 from bin_x.core.features.coverage import parse_coverages
 from bin_x.core.features.kmer_count import count_kmers
@@ -22,18 +20,13 @@ from bin_x.core.features.scm_gene import identify_marker_genomes
 def _visualize_initial_bins(df: pd.DataFrame, out_png: Path):
     # Get only the required columns
     df_kmer_counts = df.drop(["CONTIG_NAME", "PARENT_NAME", "CLUSTER"], axis=1)
-
-    # Apply PCA to reduce dimensions to 2
-    pca = PCA(n_components=2)
-    scaled_df_values = StandardScaler().fit_transform(df_kmer_counts.values)
-    principal_components = pca.fit_transform(scaled_df_values)
-    df_principal = pd.DataFrame(data=principal_components, columns=["X", "Y"])
+    df_2d = reduce_dimensions_to_2d(df_kmer_counts)
 
     # Draw and save the un-clustered and clustered points
     plt.figure(figsize=(15, 10))
-    sns.scatterplot(x="X", y="Y", data=df_principal[df.CLUSTER == -1], label="No Category", color="black", alpha=0.1)
+    sns.scatterplot(x="X", y="Y", data=df_2d[df.CLUSTER == -1], label="No Category", color="black", alpha=0.1)
     for i in range(df.CLUSTER.max() + 1):
-        sns.scatterplot(x="X", y="Y", data=df_principal[df.CLUSTER == i], label=f"Cluster {i}")
+        sns.scatterplot(x="X", y="Y", data=df_2d[df.CLUSTER == i], label=f"Cluster {i}")
     plt.savefig(out_png)
 
 
@@ -68,6 +61,7 @@ def create_dataset(
     plot_out_png = operating_dir / "plot.png"
     kmers_operation_dir = operating_dir / "kmers"
     scm_operation_dir = operating_dir / "scm"
+    operating_dir.mkdir(parents=True, exist_ok=True)
     kmers_operation_dir.mkdir(parents=True, exist_ok=True)
     scm_operation_dir.mkdir(parents=True, exist_ok=True)
 
