@@ -112,6 +112,7 @@ def create_dataset(
     df_merged = df_merged.drop("CONTIG_NAME_y", axis=1)
     df_merged.to_csv(output_dataset_csv, index=False)
     click.secho(f"Generated csv with shape {df_merged.shape}", fg="green", bold=True)
+    click.secho(f"Dumped features CSV at {output_dataset_csv}", fg="green", bold=True)
 
     # 08. Visualize
     click.secho("08. Drawing plots...", bold=True)

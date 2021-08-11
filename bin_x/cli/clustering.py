@@ -94,6 +94,7 @@ def perform_clustering(
     df_dist_bin: pd.DataFrame = parent_groups.BIN.apply(lambda x: np.bincount(x).argmax()).reset_index()
     df_dist_bin.rename(columns={"PARENT_NAME": "CONTIG_NAME"}, inplace=True)
     df_dist_bin.to_csv(dist_bin_csv, index=False)  # noqa
+    click.secho(f"Dumped binning assignment CSV at {dist_bin_csv}", fg="green", bold=True)
 
     # 05. Visualize
     click.secho("08. Drawing plots...", bold=True)
