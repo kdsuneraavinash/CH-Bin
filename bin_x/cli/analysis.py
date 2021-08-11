@@ -49,13 +49,13 @@ def analyze(
 
     # 02. Calculate confusion matrix
     n_all, n_binned = len(df_gt), len(df_gt_bin)
-    click.secho("02: Calculating confusion matrix")
+    click.secho("02: Calculating confusion matrix", bold=True)
     df_cm = get_confusion_matrix(df_gt_bin)
     df_cm.to_csv(confusion_matrix_csv, index=False)  # noqa
     df_cm_pct = 100 * df_cm / df_cm.values.sum(axis=1)[:, np.newaxis]  # Normalize
 
     # 03. Generate heatmap for confusion matrix
-    click.secho("03: Generating heatmap for confusion matrix")
+    click.secho("03: Generating heatmap for confusion matrix", bold=True)
     _, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(31, 11))
     plt.title("Confusion Matrix")
     ax1.set_title("Raw Values")
@@ -66,7 +66,7 @@ def analyze(
     click.secho(f"Heatmap saved to {heatmap_png}", fg="green", bold=True)
 
     # 04. Calculate metrics
-    click.secho("Step 04: Calculating metrics...")
+    click.secho("04: Calculating metrics...", bold=True)
     precision = get_precision(df_cm, n_binned=n_binned)
     recall = get_recall(df_cm, n_all=n_all)
     f1 = get_f1(df_cm, n_all=n_all, n_binned=n_binned)
