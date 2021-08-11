@@ -110,6 +110,5 @@ venv.bak/
 sqlite.db
 
 out
-tools
 application.log
 errors.log
