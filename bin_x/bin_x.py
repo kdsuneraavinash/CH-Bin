@@ -26,8 +26,7 @@ def memory_usage(snapshot, key_type="lineno"):
         )
     )
     top_stats = snapshot.statistics(key_type)
-    total = sum(stat.size for stat in top_stats)
-    return total / 1024
+    return sum(stat.size for stat in top_stats)
 
 
 @click.command()
@@ -87,13 +86,13 @@ def run(config: Path, contigs: Path, coverages: Path, out: Path, ground_truth: P
 
         snapshot = tracemalloc.take_snapshot()
         end = time.time()
-        used_memory_kb = memory_usage(snapshot) // 1024
+        used_memory_kb = memory_usage(snapshot) / 1024
         click.secho(f"Script took {end - start}s.", fg="magenta", bold=True)
         click.secho(f"Total allocated size during all iterations: {used_memory_kb} KiB", fg="magenta", bold=True)
 
-        click.secho(f"\nPrecision: {precision_mean} ({precision_ci_start}-{precision_ci_end})", fg="green", bold=True)
-        click.secho(f"Recall: {recall_mean} ({recall_ci_start}-{recall_ci_end})", fg="green", bold=True)
-        click.secho(f"F1: {f1_mean} ({f1_ci_start}-{f1_ci_end})", fg="green", bold=True)
+        click.secho(f"\nPrecision: {precision_mean} ({precision_ci_start}-{precision_ci_end})", fg="blue", bold=True)
+        click.secho(f"Recall: {recall_mean} ({recall_ci_start}-{recall_ci_end})", fg="blue", bold=True)
+        click.secho(f"F1: {f1_mean} ({f1_ci_start}-{f1_ci_end})", fg="blue", bold=True)
     except Exception as e:
         handle_error(e)
 
