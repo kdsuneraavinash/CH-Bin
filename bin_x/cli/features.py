@@ -39,7 +39,7 @@ def create_dataset(
     coverage_thresh: float = 0.4,
     select_percentile: float = 0.95,
     seed_contig_split_len: int = 10000,
-) -> pd.DataFrame:
+) -> Path:
     """
     Create a dataset using the given input and configuration.
 
@@ -52,7 +52,7 @@ def create_dataset(
     :param select_percentile: Percentile to use for selecting the number of seeds.
                 For example, 0.5 will take the median number of seeds.
     :param seed_contig_split_len: Length to split the seed contigs.
-    :return: Merged dataset with initial bins marked.
+    :return: Path of merged dataset with initial bins marked.
     """
 
     filtered_fasta = operating_dir / "filtered.fasta"
@@ -118,7 +118,7 @@ def create_dataset(
     click.secho("08. Drawing plots...", bold=True)
     _visualize_initial_bins(df_merged, plot_out_png)
 
-    return df_merged
+    return output_dataset_csv
 
 
 @click.command()

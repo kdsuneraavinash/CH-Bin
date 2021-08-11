@@ -38,7 +38,7 @@ def perform_clustering(
     max_iterations: int = 10,
     metric: str = "convex",
     qp_solver: str = "quadprog",
-) -> pd.DataFrame:
+) -> Path:
     """
     Perform binning and output the binning result.
 
@@ -48,7 +48,7 @@ def perform_clustering(
     :param max_iterations: Number of maximum iterations to perform.
     :param metric: Polytope distance matrix (convex/affine)
     :param qp_solver: Quadratic programming problem solver. (quadprog/cvxopt)
-    :return: The binning result dataset.
+    :return: Path of the binning result dataset.
     """
     dist_bin_csv = operating_dir / "bin.csv"
     split_bin_png = operating_dir / "split_bin.png"
@@ -100,7 +100,7 @@ def perform_clustering(
     click.secho("08. Drawing plots...", bold=True)
     _visualize_final_result(num_clusters, df_features, df_dist_bin, split_bin_png, bin_counts_png)
 
-    return df_dist_bin
+    return dist_bin_csv
 
 
 @click.command()
