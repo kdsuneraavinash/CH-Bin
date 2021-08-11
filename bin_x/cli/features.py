@@ -75,7 +75,7 @@ def create_dataset(
     removed_contigs = filter_short_contigs(contig_fasta, filtered_fasta, threshold=short_contig_threshold)
     click.secho(f"Removed {len(removed_contigs)} (of {len(contig_lengths)}) short contigs", fg="green", bold=True)
 
-    # 03. Identify seed contigs and split them
+    # 03. Perform single-copy marker gene analysis
     click.secho("03. Performing single-copy marker gene analysis...", bold=True)
     seed_clusters = identify_marker_genomes(
         filtered_fasta,
