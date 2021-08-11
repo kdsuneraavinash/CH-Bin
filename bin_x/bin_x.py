@@ -1,3 +1,4 @@
+import datetime
 import time
 import tracemalloc
 from pathlib import Path
@@ -40,6 +41,8 @@ def run(config: Path, contigs: Path, coverages: Path, out: Path, ground_truth: P
     try:
         USER_CONFIG.read(config)
         parameters = USER_CONFIG["PARAMETERS"]
+
+        out = out / datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         features_out = out / "features"
         clustering_out = out / "clustering"
         analysis_out = out / "analysis"
