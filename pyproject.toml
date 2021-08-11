@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bin_x"
-version = "0.02"
+version = "0.0.2"
 description = ""
 authors = ["K. D. Sunera Avinash Chandrasiri <kdsuneraavinash@gmail.com>",
     "Thumula Perera <thumula.17@cse.mrt.ac.lk>",
