@@ -44,9 +44,6 @@ def run(config: Path, contigs: Path, coverages: Path, out: Path, ground_truth: P
 
         out = out / datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         features_out = out / "features"
-        clustering_out = out / "clustering"
-        analysis_out = out / "analysis"
-        results_csv = out / "results.csv"
 
         start = time.time()
         tracemalloc.start()
@@ -63,6 +60,11 @@ def run(config: Path, contigs: Path, coverages: Path, out: Path, ground_truth: P
         )
         data = []
         for i in range(n_iter):
+            dir_index = str(i + 1)
+            clustering_out = out / dir_index / "clustering"
+            analysis_out = out / dir_index / "analysis"
+            results_csv = out / dir_index / "results.csv"
+
             click.secho(f"\nIteration {i + 1}\n", fg="magenta", bold=True)
             dist_bin_csv = perform_clustering(
                 features_csv=features_csv,
