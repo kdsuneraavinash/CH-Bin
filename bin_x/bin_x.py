@@ -104,7 +104,7 @@ def evaluate(config: Path, contigs: Path, coverages: Path, out: Path, ground_tru
         click.secho(f"\n\nPrecision: {precision_mean} ({precision_ci_start}-{precision_ci_end})", fg="blue", bold=True)
         click.secho(f"Recall: {recall_mean} ({recall_ci_start}-{recall_ci_end})", fg="blue", bold=True)
         click.secho(f"F1: {f1_mean} ({f1_ci_start}-{f1_ci_end})", fg="blue", bold=True)
-        click.secho(f"F1: {ari_mean} ({ari_ci_start}-{ari_ci_end})", fg="blue", bold=True)
+        click.secho(f"ARI: {ari_mean} ({ari_ci_start}-{ari_ci_end})", fg="blue", bold=True)
     except Exception as e:
         handle_error(e)
 
