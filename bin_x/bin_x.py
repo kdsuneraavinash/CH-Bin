@@ -93,7 +93,7 @@ def evaluate(config: Path, contigs: Path, coverages: Path, out: Path, ground_tru
         precision_mean, (precision_ci_start, precision_ci_end) = _conf_interval(df.precision)
         recall_mean, (recall_ci_start, recall_ci_end) = _conf_interval(df.recall)
         f1_mean, (f1_ci_start, f1_ci_end) = _conf_interval(df.f1)
-        ari_mean, (ari_ci_start, ari_ci_end) = _conf_interval(df.f1)
+        ari_mean, (ari_ci_start, ari_ci_end) = _conf_interval(df.ari)
 
         snapshot = tracemalloc.take_snapshot()
         end = time.time()
