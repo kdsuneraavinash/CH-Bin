@@ -1,3 +1,4 @@
+from configparser import SectionProxy
 from pathlib import Path
 
 import click
@@ -36,6 +37,7 @@ def create_dataset(
     coverage_file: Path,
     operating_dir: Path,
     kmer_k: int = 4,
+    kmer_counter_tool: str = "kmer_counter",
     short_contig_threshold: int = 1000,
     coverage_thresh: float = 0.4,
     select_percentile: float = 0.95,
@@ -48,6 +50,7 @@ def create_dataset(
     :param coverage_file: Coverage file containing abundance information.
     :param operating_dir: Directory to write temp files to.
     :param kmer_k: k value of the kmers to count.
+    :param kmer_counter_tool: kmer counter tool to use. (kmer_counter/seq2vec)
     :param short_contig_threshold: Threshold to filter the short contigs.
     :param coverage_thresh: Threshold for a hit to be considered for the seed frequency distribution.
     :param select_percentile: Percentile to use for selecting the number of seeds.
@@ -93,8 +96,8 @@ def create_dataset(
     click.secho(f"Found {len(sub_contigs)} contigs after splitting", fg="green", bold=True)
 
     # 05. Calculate normalized kmer frequencies
-    click.secho("05. Calculating normalized kmer frequencies...", bold=True)
-    df_kmer_freq = count_kmers(split_fasta, kmers_operation_dir, k=kmer_k)
+    click.secho(f"05. Calculating normalized kmer frequencies using {kmer_counter_tool}...", bold=True)
+    df_kmer_freq = count_kmers(split_fasta, kmers_operation_dir, k=kmer_k, tool=kmer_counter_tool)
 
     # 06. Create a dataset with the initial cluster information
     click.secho("06. Creating a dataset with the initial cluster information...", bold=True)
@@ -122,6 +125,30 @@ def create_dataset(
     return output_dataset_csv
 
 
+def run_create_dataset(contig_fasta: Path, coverage_file: Path, operating_dir: Path, parameters: SectionProxy) -> Path:
+    """
+    Create a dataset using the given input and configuration.
+
+    :param contig_fasta: Contig file to use for kmer counting.
+    :param coverage_file: Coverage file containing abundance information.
+    :param operating_dir: Directory to write temp files to.
+    :param parameters: Parameters INI section.
+    :return: Path of merged dataset with initial bins marked.
+    """
+
+    return create_dataset(
+        contig_fasta=contig_fasta,
+        coverage_file=coverage_file,
+        operating_dir=operating_dir,
+        kmer_k=int(parameters["KmerK"]),
+        kmer_counter_tool=parameters["KmerCounterTool"],
+        short_contig_threshold=int(parameters["ContigLengthFilterBp"]),
+        coverage_thresh=float(parameters["ScmCoverageThreshold"]),
+        select_percentile=float(parameters["ScmSelectPercentile"]),
+        seed_contig_split_len=int(parameters["SeedContigSplitLengthBp"]),
+    )
+
+
 @click.command()
 @click.option("--config", prompt="Configuration file", help="The INI File to use for tool configuration.", type=Path)
 @click.option("--contigs", prompt="Contig file", help="The contig file to perform the binning operation.", type=Path)
@@ -131,16 +158,7 @@ def main(config: Path, contigs: Path, coverages: Path, out: Path):
     try:
         USER_CONFIG.read(config)
         parameters = USER_CONFIG["PARAMETERS"]
-        create_dataset(
-            contig_fasta=contigs,
-            coverage_file=coverages,
-            operating_dir=out,
-            kmer_k=int(parameters["KmerK"]),
-            short_contig_threshold=int(parameters["ContigLengthFilterBp"]),
-            coverage_thresh=float(parameters["ScmCoverageThreshold"]),
-            select_percentile=float(parameters["ScmSelectPercentile"]),
-            seed_contig_split_len=int(parameters["SeedContigSplitLengthBp"]),
-        )
+        run_create_dataset(contigs, coverages, out, parameters)
     except Exception as e:
         handle_error(e)
 

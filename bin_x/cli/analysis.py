@@ -1,3 +1,4 @@
+from configparser import SectionProxy
 from pathlib import Path
 from typing import Tuple
 
@@ -83,6 +84,29 @@ def analyze(
     return precision, recall, f1, ari
 
 
+def run_analyze(
+    contig_fasta: Path, ground_truth_csv: Path, binning_result_csv: Path, operating_dir: Path, parameters: SectionProxy
+) -> Tuple[float, float, float, float]:
+    """
+    Create a dataset using the given input and configuration.
+
+    :param contig_fasta: Contig file to use for kmer counting.
+    :param ground_truth_csv: Ground truth CSV file.
+    :param binning_result_csv: Binning result CSV file.
+    :param operating_dir: Directory to write temp files to.
+    :param parameters: Parameters INI section.
+    :return: Performance metrics tuple.
+    """
+
+    return analyze(
+        contig_fasta=contig_fasta,
+        ground_truth_csv=ground_truth_csv,
+        binning_result_csv=binning_result_csv,
+        operating_dir=operating_dir,
+        short_contig_threshold=int(parameters["ContigLengthFilterBp"]),
+    )
+
+
 @click.command()
 @click.option("--config", prompt="Configuration file", help="The INI File to use for tool configuration.", type=Path)
 @click.option("--contigs", prompt="Contig file", help="The contig file to perform the binning operation.", type=Path)
@@ -93,13 +117,7 @@ def main(config: Path, contigs: Path, ground_truth: Path, bin_result: Path, out:
     try:
         USER_CONFIG.read(config)
         parameters = USER_CONFIG["PARAMETERS"]
-        analyze(
-            contig_fasta=contigs,
-            ground_truth_csv=ground_truth,
-            binning_result_csv=bin_result,
-            operating_dir=out,
-            short_contig_threshold=int(parameters["ContigLengthFilterBp"]),
-        )
+        run_analyze(contigs, ground_truth, bin_result, out, parameters)
     except Exception as e:
         handle_error(e)
 

@@ -1,3 +1,4 @@
+from configparser import SectionProxy
 from pathlib import Path
 
 import click
@@ -105,6 +106,26 @@ def perform_clustering(
     return dist_bin_csv
 
 
+def run_perform_clustering(features_csv: Path, operating_dir: Path, parameters: SectionProxy) -> Path:
+    """
+    Perform binning and output the binning result.
+
+    :param features_csv: CSV containing the feature vectors and initial bins.
+    :param operating_dir: Directory to write temp files to.
+    :param parameters: Parameters INI section.
+    :return: Path of the binning result dataset.
+    """
+
+    return perform_clustering(
+        features_csv=features_csv,
+        operating_dir=operating_dir,
+        num_neighbors=int(parameters["AlgoNumNeighbors"]),
+        max_iterations=int(parameters["AlgoMaxIterations"]),
+        metric=parameters["AlgoDistanceMetric"],
+        qp_solver=parameters["AlgoQpSolver"],
+    )
+
+
 @click.command()
 @click.option("--config", prompt="Configuration file", help="The INI File to use for tool configuration.", type=Path)
 @click.option("--features", prompt="Features file", help="The features CSV file with initial clustering.", type=Path)
@@ -113,14 +134,7 @@ def main(config: Path, features: Path, out: Path):
     try:
         USER_CONFIG.read(config)
         parameters = USER_CONFIG["PARAMETERS"]
-        perform_clustering(
-            features_csv=features,
-            operating_dir=out,
-            num_neighbors=int(parameters["AlgoNumNeighbors"]),
-            max_iterations=int(parameters["AlgoMaxIterations"]),
-            metric=parameters["AlgoDistanceMetric"],
-            qp_solver=parameters["AlgoQpSolver"],
-        )
+        run_perform_clustering(features, out, parameters)
     except Exception as e:
         handle_error(e)
 

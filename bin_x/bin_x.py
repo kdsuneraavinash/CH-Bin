@@ -8,9 +8,9 @@ import numpy as np
 import pandas as pd
 import scipy.stats as st
 
-from bin_x.cli.analysis import analyze
-from bin_x.cli.clustering import perform_clustering
-from bin_x.cli.features import create_dataset
+from bin_x.cli.analysis import run_analyze
+from bin_x.cli.clustering import run_perform_clustering
+from bin_x.cli.features import run_create_dataset
 from bin_x.cli.utils import handle_error
 from bin_x.core.config import USER_CONFIG
 
@@ -53,16 +53,7 @@ def evaluate(config: Path, contigs: Path, coverages: Path, out: Path, ground_tru
         start = time.time()
         tracemalloc.start()
 
-        features_csv = create_dataset(
-            contig_fasta=contigs,
-            coverage_file=coverages,
-            operating_dir=features_out,
-            kmer_k=int(parameters["KmerK"]),
-            short_contig_threshold=int(parameters["ContigLengthFilterBp"]),
-            coverage_thresh=float(parameters["ScmCoverageThreshold"]),
-            select_percentile=float(parameters["ScmSelectPercentile"]),
-            seed_contig_split_len=int(parameters["SeedContigSplitLengthBp"]),
-        )
+        features_csv = run_create_dataset(contigs, coverages, features_out, parameters)
         data = []
         for i in range(n_iter):
             dir_index = str(i + 1)
@@ -71,21 +62,8 @@ def evaluate(config: Path, contigs: Path, coverages: Path, out: Path, ground_tru
             results_csv = out / dir_index / "results.csv"
 
             click.secho(f"\nIteration {i + 1}\n", fg="magenta", bold=True)
-            dist_bin_csv = perform_clustering(
-                features_csv=features_csv,
-                operating_dir=clustering_out,
-                num_neighbors=int(parameters["AlgoNumNeighbors"]),
-                max_iterations=int(parameters["AlgoMaxIterations"]),
-                metric=parameters["AlgoDistanceMetric"],
-                qp_solver=parameters["AlgoQpSolver"],
-            )
-            precision, recall, f1, ari = analyze(
-                contig_fasta=contigs,
-                ground_truth_csv=ground_truth,
-                binning_result_csv=dist_bin_csv,
-                operating_dir=analysis_out,
-                short_contig_threshold=int(parameters["ContigLengthFilterBp"]),
-            )
+            dist_bin_csv = run_perform_clustering(features_csv, clustering_out, parameters)
+            precision, recall, f1, ari = run_analyze(contigs, ground_truth, dist_bin_csv, analysis_out, parameters)
             data.append([i, precision, recall, f1, ari])
         df = pd.DataFrame(data, columns=["iteration", "precision", "recall", "f1", "ari"])
         df.to_csv(results_csv, index=False)  # noqa
@@ -121,24 +99,8 @@ def run(config: Path, contigs: Path, coverages: Path, out: Path):
         features_out = out / "features"
         clustering_out = out / "clustering"
 
-        features_csv = create_dataset(
-            contig_fasta=contigs,
-            coverage_file=coverages,
-            operating_dir=features_out,
-            kmer_k=int(parameters["KmerK"]),
-            short_contig_threshold=int(parameters["ContigLengthFilterBp"]),
-            coverage_thresh=float(parameters["ScmCoverageThreshold"]),
-            select_percentile=float(parameters["ScmSelectPercentile"]),
-            seed_contig_split_len=int(parameters["SeedContigSplitLengthBp"]),
-        )
-        dist_bin_csv = perform_clustering(
-            features_csv=features_csv,
-            operating_dir=clustering_out,
-            num_neighbors=int(parameters["AlgoNumNeighbors"]),
-            max_iterations=int(parameters["AlgoMaxIterations"]),
-            metric=parameters["AlgoDistanceMetric"],
-            qp_solver=parameters["AlgoQpSolver"],
-        )
+        features_csv = run_create_dataset(contigs, coverages, features_out, parameters)
+        dist_bin_csv = run_perform_clustering(features_csv, clustering_out, parameters)
         click.secho(f"Final Binning CSV is at {dist_bin_csv}", fg="green", bold=True)
     except Exception as e:
         handle_error(e)
