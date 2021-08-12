@@ -31,12 +31,12 @@ def memory_usage(snapshot, key_type="lineno"):
 
 
 @click.command()
-@click.option("--config", prompt="Configuration file", help="The INI File to use for tool configuration.", type=Path)
-@click.option("--contigs", prompt="Contig file", help="The contig file to perform the binning operation.", type=Path)
-@click.option("--coverages", prompt="Coverage file", help="The tab-seperated file with abundance data.", type=Path)
-@click.option("--out", prompt="Output Directory", help="The output directory for the tool.", type=Path)
-@click.option("--ground_truth", prompt="Ground Truth file", help="The ground truth CSV.", type=Path)
-@click.option("--n_iter", prompt="Number of Iterations", help="Number of Iterations to run.", type=int)
+@click.option("-i", "--contigs", required=True, help="The contig file to perform the binning operation.", type=Path)
+@click.option("-c", "--coverages", required=True, help="The tab-seperated file with abundance data.", type=Path)
+@click.option("-g", "--ground_truth", required=True, help="The ground truth CSV.", type=Path)
+@click.option("-s", "--config", help="The configuration file path.", type=Path, default=Path("config/default.ini"))
+@click.option("-o", "--out", help="The output directory for the tool.", default=Path("out"))
+@click.option("-t", "--n_iter", help="Number of Iterations to run.", type=int, default=1)
 def run(config: Path, contigs: Path, coverages: Path, out: Path, ground_truth: Path, n_iter: int):
     try:
         USER_CONFIG.read(config)
