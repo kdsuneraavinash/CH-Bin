@@ -35,7 +35,7 @@ def memory_usage(snapshot, key_type="lineno"):
 @click.option("-c", "--coverages", required=True, help="The tab-seperated file with abundance data.", type=Path)
 @click.option("-g", "--ground_truth", required=True, help="The ground truth CSV.", type=Path)
 @click.option("-s", "--config", help="The configuration file path.", type=Path, default=Path("config/default.ini"))
-@click.option("-o", "--out", help="The output directory for the tool.", default=Path("out"))
+@click.option("-o", "--out", help="The output directory for the tool.", type=Path, default=Path("out"))
 @click.option("-t", "--n_iter", help="Number of Iterations to run.", type=int, default=1)
 def run(config: Path, contigs: Path, coverages: Path, out: Path, ground_truth: Path, n_iter: int):
     try:
