@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.metrics import adjusted_rand_score
 
 
 def get_confusion_matrix(df_gt_bin: pd.DataFrame) -> pd.DataFrame:
@@ -21,3 +22,7 @@ def get_f1(df_cm: pd.DataFrame, n_binned: int, n_all: int):
     precision = get_precision(df_cm, n_binned=n_binned)
     recall = get_recall(df_cm, n_all=n_all)
     return (2 * precision * recall) / (precision + recall)
+
+
+def get_ari(df_gt_bin: pd.DataFrame):
+    return adjusted_rand_score(labels_true=df_gt_bin.SPECIES, labels_pred=df_gt_bin.BIN)

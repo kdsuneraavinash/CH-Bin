@@ -9,6 +9,7 @@ import seaborn as sns
 
 from bin_x.analysis.ground_truth import get_ground_truth
 from bin_x.analysis.metrics import (
+    get_ari,
     get_confusion_matrix,
     get_f1,
     get_precision,
@@ -24,7 +25,7 @@ def analyze(
     binning_result_csv: Path,
     operating_dir: Path,
     short_contig_threshold: int = 1000,
-) -> Tuple[float, float, float]:
+) -> Tuple[float, float, float, float]:
     """
     Analyzes performance metrics of a given binning result.
 
@@ -71,9 +72,15 @@ def analyze(
     precision = get_precision(df_cm, n_binned=n_binned)
     recall = get_recall(df_cm, n_all=n_all)
     f1 = get_f1(df_cm, n_all=n_all, n_binned=n_binned)
-    click.secho(f"Metrics\n\tPrecision: {precision}\n\tRecall: {recall}\n\tF1: {f1}", fg="green", bold=True)
+    ari = get_ari(df_gt_bin)
 
-    return precision, recall, f1
+    click.secho("Metrics", fg="green", bold=True)
+    click.secho(f"\tPrecision: {precision}", fg="green", bold=True)
+    click.secho(f"\tRecall: {recall}", fg="green", bold=True)
+    click.secho(f"\tF1: {f1}", fg="green", bold=True)
+    click.secho(f"\tARI: {ari}", fg="green", bold=True)
+
+    return precision, recall, f1, ari
 
 
 @click.command()

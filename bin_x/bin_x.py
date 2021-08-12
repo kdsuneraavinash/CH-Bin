@@ -79,20 +79,21 @@ def evaluate(config: Path, contigs: Path, coverages: Path, out: Path, ground_tru
                 metric=parameters["AlgoDistanceMetric"],
                 qp_solver=parameters["AlgoQpSolver"],
             )
-            precision, recall, f1 = analyze(
+            precision, recall, f1, ari = analyze(
                 contig_fasta=contigs,
                 ground_truth_csv=ground_truth,
                 binning_result_csv=dist_bin_csv,
                 operating_dir=analysis_out,
                 short_contig_threshold=int(parameters["ContigLengthFilterBp"]),
             )
-            data.append([i, precision, recall, f1])
-        df = pd.DataFrame(data, columns=["iteration", "precision", "recall", "f1"])
+            data.append([i, precision, recall, f1, ari])
+        df = pd.DataFrame(data, columns=["iteration", "precision", "recall", "f1", "ari"])
         df.to_csv(results_csv, index=False)  # noqa
 
         precision_mean, (precision_ci_start, precision_ci_end) = _conf_interval(df.precision)
         recall_mean, (recall_ci_start, recall_ci_end) = _conf_interval(df.recall)
         f1_mean, (f1_ci_start, f1_ci_end) = _conf_interval(df.f1)
+        ari_mean, (ari_ci_start, ari_ci_end) = _conf_interval(df.f1)
 
         snapshot = tracemalloc.take_snapshot()
         end = time.time()
@@ -103,6 +104,7 @@ def evaluate(config: Path, contigs: Path, coverages: Path, out: Path, ground_tru
         click.secho(f"\n\nPrecision: {precision_mean} ({precision_ci_start}-{precision_ci_end})", fg="blue", bold=True)
         click.secho(f"Recall: {recall_mean} ({recall_ci_start}-{recall_ci_end})", fg="blue", bold=True)
         click.secho(f"F1: {f1_mean} ({f1_ci_start}-{f1_ci_end})", fg="blue", bold=True)
+        click.secho(f"F1: {ari_mean} ({ari_ci_start}-{ari_ci_end})", fg="blue", bold=True)
     except Exception as e:
         handle_error(e)
 
