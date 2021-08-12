@@ -28,6 +28,7 @@ def _visualize_initial_bins(df: pd.DataFrame, out_png: Path):
     for i in range(df.CLUSTER.max() + 1):
         sns.scatterplot(x="X", y="Y", data=df_2d[df.CLUSTER == i], label=f"Cluster {i}")
     plt.savefig(out_png)
+    plt.clf()
 
 
 def create_dataset(
