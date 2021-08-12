@@ -45,11 +45,6 @@
    ```
    bin_x
    ```
-4. (Optional) Build the documentation via:
-    ```bash
-   cd docs
-    poetry run sphinx-autobuild . _build/html --port 8001
-    ```
 
 ## Development
 
@@ -64,6 +59,11 @@
 3. Run the tool via:
     ```bash
     poetry run python -m bin_x.bin_x
+    ```
+4. (Optional) Build the documentation via:
+    ```bash
+   cd docs
+    poetry run sphinx-autobuild . _build/html --port 8001
     ```
 
 Additionally, linting and type-checking are configured to this project. You may install the git-hooks for the formatters
