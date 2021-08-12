@@ -63,7 +63,7 @@ def analyze(
     ax2.set_title("Normalized")
     sns.heatmap(df_cm_pct, annot=True, fmt=".3g", ax=ax2)
     plt.savefig(heatmap_png)
-    plt.clf()
+    plt.close()
     click.secho(f"Heatmap saved to {heatmap_png}", fg="green", bold=True)
 
     # 04. Calculate metrics

@@ -24,13 +24,13 @@ def _visualize_final_result(
     for i in range(-1, num_clusters):
         sns.scatterplot(x="X", y="Y", data=df_2d[df_kmer_bins.BIN == i], label=f"Cluster {i}", alpha=0.1)
     plt.savefig(split_bin_png)
-    plt.clf()
+    plt.close()
 
     plt.figure(figsize=(15, 10))
     plt.title("Bin Counts")
     sns.histplot(df_kmer_bins, x="BIN", discrete=True)
     plt.savefig(bin_counts_png)
-    plt.clf()
+    plt.close()
 
 
 def perform_clustering(
