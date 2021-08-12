@@ -36,12 +36,7 @@
    ```bash
    python setup.py install
    ```
-2. Copy the `config/default.ini` file and modify it to fit your configuration.
-   ```bash
-   cp config/default.ini config.ini
-   vim config.ini
-   ```
-3. Run following command to run the tool.
+2. Run following command to run the tool.
    ```
    bin_x run --contig [CONTIG_FASTA] --coverages [COVERAGE_TSV] --out [OUT_DIR]
    ```
