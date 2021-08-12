@@ -43,7 +43,7 @@
    ```
 3. Run following command to run the tool.
    ```
-   bin_x
+   bin_x run --contig [CONTIG_FASTA] --coverages [COVERAGE_TSV] --out [OUT_DIR]
    ```
 
 ## Development
