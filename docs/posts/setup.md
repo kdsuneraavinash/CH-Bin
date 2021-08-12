@@ -42,3 +42,32 @@ In the parameters section, you can adjust the default tool settings. Following t
 ## Providing Configuration
 
 When running `bin_x` you can provide the custom configuration file via, `-s` or `--config` parameter.
+
+## Using seq2vec
+
+`seq2vec` is a fast kmer-counter tool. But due to dependency issues, by default, this tool uses kmer-counter. However,
+there will be a performance improvement if `seq2vec` is used.
+
+For that, first install boost (1.72+).
+
+```bash
+sudo apt-get install libboost-all-dev
+```
+
+Then download and build the `seq2vec` project.
+
+```bash
+git clone https://github.com/anuradhawick/seq2vec.git tools/seq2vec
+cd tools/seq2vec/ && mkdir build && cmake . && make -j8 && cd ../..
+./tools/seq2vec/seq2vec --help
+```
+
+Finally, set the configuration parameters as follows and provide the modified configuration file when running `bin_x`.
+
+```ini
+[COMMANDS]
+Seq2Vec = tools/seq2vec/seq2vec
+
+[PARAMETERS]
+KmerCounterTool = seq2vec
+```
