@@ -2,7 +2,7 @@
 
 ## Installation
 
-# ````## Requirements
+### Requirements
 
 1. Install [FragGeneScan](https://sourceforge.net/projects/fraggenescan).
    ```bash
