@@ -14,7 +14,7 @@ in `config/default.ini`.
 ```ini
 [COMMANDS]
 FragGeneScan = DIR OF run_FragGeneScan.pl
-HmmSearch = DIR OF hmmsearch
+Hmmer = DIR OF Hmmer
 KMerCounter = DIR OF kmer-counter
 Seq2Vec = DIR OF seq2vec
 
