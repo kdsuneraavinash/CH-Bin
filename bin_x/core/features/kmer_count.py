@@ -25,10 +25,15 @@ def _kmer_counter_count_kmers(contig_fasta: Path, operating_dir: Path, k: int = 
     """
 
     # 01. Run the kmer counter tool
-    kmer_command = USER_CONFIG["COMMANDS"]["KMerCounter"]
+    kmer_command_dir = USER_CONFIG["COMMANDS"]["KMerCounter"]
     kmer_count_txt = operating_dir / "count.txt"
     kmer_count_csv = operating_dir / "normalized_kmer.csv"
-    run_command(f"{kmer_command} --fasta --k={k} --results-dir={operating_dir} {contig_fasta}")
+    arguments = ["kmer-counter"]
+    arguments.extend(["--fasta"])
+    arguments.extend([f"--k={k}"])
+    arguments.extend([f"--results-dir={operating_dir}"])
+    arguments.extend([contig_fasta])
+    run_command(*arguments, env_paths=[kmer_command_dir])
 
     # 02. Read the tool output text file
     # TODO: Reading this file to memory should be by chunks
@@ -65,10 +70,14 @@ def _seq2vec_count_kmers(contig_fasta: Path, operating_dir: Path, k: int = 4) ->
     """
 
     # 01. Run the seq2vec tool
-    kmer_command = USER_CONFIG["COMMANDS"]["Seq2Vec"]
+    kmer_command_dir = USER_CONFIG["COMMANDS"]["Seq2Vec"]
     kmer_count_txt = operating_dir / "count.txt"
     kmer_count_csv = operating_dir / "normalized_kmer.csv"
-    run_command(f"{kmer_command} -f {contig_fasta} -o {kmer_count_txt} -k {k}")
+    arguments = ["seq2vec"]
+    arguments.extend(["-f", contig_fasta])
+    arguments.extend(["-o", kmer_count_txt])
+    arguments.extend(["-k", str(k)])
+    run_command(*arguments, env_paths=[kmer_command_dir])
 
     contig_names = []
     with open(contig_fasta, mode="r") as fr:

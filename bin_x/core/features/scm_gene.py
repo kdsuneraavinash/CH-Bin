@@ -24,11 +24,17 @@ def _run_frag_gene_scan(contig_file: Path, operating_dir: Path) -> Path:
     :param operating_dir: Directory to write temp files to.
     :return: The Frag Gene Scan output FAA file path.
     """
-    fgs_command = USER_CONFIG["COMMANDS"]["FragGeneScan"]
+    fgs_command_dir = USER_CONFIG["COMMANDS"]["FragGeneScan"]
     fgs_dir = operating_dir / "frag-gene-scan"
     fgs_dir.mkdir(parents=True, exist_ok=True)
     fgs_dir_prefix = fgs_dir / "frags"
-    run_command(f"{fgs_command} -genome={contig_file} -out={fgs_dir_prefix} -complete=0 -train=complete -thread=10")
+    arguments = ["run_FragGeneScan.pl"]
+    arguments.extend([f"-genome={contig_file}"])
+    arguments.extend([f"-out={fgs_dir_prefix}"])
+    arguments.extend(["-complete=0"])
+    arguments.extend(["-train=complete"])
+    arguments.extend(["-thread=10"])
+    run_command(*arguments, env_paths=[fgs_command_dir])
     return fgs_dir / "frags.faa"
 
 
@@ -41,21 +47,22 @@ def _run_hmm_search(fgs_file: Path, operating_dir: Path) -> Path:
     :param operating_dir: Directory to write temp files to.
     :return: per domain hits output file path.
     """
-    hmm_search_command = USER_CONFIG["COMMANDS"]["HmmSearch"]
+    hmmer_command_dir = USER_CONFIG["COMMANDS"]["Hmmer"]
     markers_hmm_resource = USER_CONFIG["RESOURCES"]["MarkersHmm"]
     hmm_dir = operating_dir / "hmmer"
     per_domain_hits_file = hmm_dir / "per-domain-hits.hmmout"
     per_seq_hits_file = hmm_dir / "per-sequence-hits.hmmout"
     hmm_stdout = hmm_dir / "stdout.txt"
     hmm_dir.mkdir(parents=True, exist_ok=True)
-    run_command(
-        f"{hmm_search_command} "
-        f"-o {hmm_stdout} "
-        f"--domtblout {per_domain_hits_file} "
-        f"--tblout {per_seq_hits_file} "
-        f"--cut_tc --cpu 10 "
-        f"{markers_hmm_resource} {fgs_file}"
-    )
+    arguments = ["hmmsearch"]
+    arguments.extend(["-o", hmm_stdout])
+    arguments.extend(["--domtblout", per_domain_hits_file])
+    arguments.extend(["--tblout", per_seq_hits_file])
+    arguments.extend(["--cpu", "10"])
+    arguments.extend(["--cut_tc"])
+    arguments.extend([markers_hmm_resource])
+    arguments.extend([fgs_file])
+    run_command(*arguments, env_paths=[hmmer_command_dir])
     return per_domain_hits_file
 
 
