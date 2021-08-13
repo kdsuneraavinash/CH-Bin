@@ -6,7 +6,7 @@ that are used for single-copy marker gene analysis.
 import math
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from Bio import SearchIO
 from Bio.SearchIO import Hit
@@ -54,7 +54,7 @@ def _run_hmm_search(fgs_file: Path, operating_dir: Path) -> Path:
     per_seq_hits_file = hmm_dir / "per-sequence-hits.hmmout"
     hmm_stdout = hmm_dir / "stdout.txt"
     hmm_dir.mkdir(parents=True, exist_ok=True)
-    arguments = ["hmmsearch"]
+    arguments: List[Union[str, Path]] = ["hmmsearch"]
     arguments.extend(["-o", hmm_stdout])
     arguments.extend(["--domtblout", per_domain_hits_file])
     arguments.extend(["--tblout", per_seq_hits_file])

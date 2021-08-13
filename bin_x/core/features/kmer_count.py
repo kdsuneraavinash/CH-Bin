@@ -4,7 +4,7 @@ that are used for kmer counting based operations.
 """
 
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List, Union
 
 import pandas as pd
 from Bio import SeqIO
@@ -28,7 +28,7 @@ def _kmer_counter_count_kmers(contig_fasta: Path, operating_dir: Path, k: int = 
     kmer_command_dir = USER_CONFIG["COMMANDS"]["KMerCounter"]
     kmer_count_txt = operating_dir / "count.txt"
     kmer_count_csv = operating_dir / "normalized_kmer.csv"
-    arguments = ["kmer-counter"]
+    arguments: List[Union[str, Path]] = ["kmer-counter"]
     arguments.extend(["--fasta"])
     arguments.extend([f"--k={k}"])
     arguments.extend([f"--results-dir={operating_dir}"])
@@ -73,7 +73,7 @@ def _seq2vec_count_kmers(contig_fasta: Path, operating_dir: Path, k: int = 4) ->
     kmer_command_dir = USER_CONFIG["COMMANDS"]["Seq2Vec"]
     kmer_count_txt = operating_dir / "count.txt"
     kmer_count_csv = operating_dir / "normalized_kmer.csv"
-    arguments = ["seq2vec"]
+    arguments: List[Union[str, Path]] = ["seq2vec"]
     arguments.extend(["-f", contig_fasta])
     arguments.extend(["-o", kmer_count_txt])
     arguments.extend(["-k", str(k)])
