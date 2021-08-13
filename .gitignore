@@ -112,3 +112,4 @@ sqlite.db
 out
 application.log
 errors.log
+*.npy

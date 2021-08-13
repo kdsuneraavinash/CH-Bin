@@ -1,14 +1,23 @@
+from pathlib import Path
+
 import numpy as np
+from numpy.lib.format import open_memmap
 from scipy.spatial.distance import cdist
 
 
-def create_distance_matrix(arr: np.ndarray) -> np.ndarray:
+def create_distance_matrix(arr: np.ndarray, operating_dir: Path) -> np.ndarray:
     """
     This calculates a distance matrix D of nxn size for given array of n elements.
     The (i,j) element of matrix will have the euclidean distance from ith point to the jth point.
     """
-
-    return cdist(arr, arr, metric="euclidean")
+    n = len(arr)
+    file_name = operating_dir / "distance_matrix.npy"
+    result = open_memmap(filename=file_name, mode="w+", shape=(n, n))
+    for i in range(n):
+        result[i] = cdist([arr[i]], arr, metric="euclidean")
+    result.flush()
+    result = open_memmap(filename=file_name, mode="r", shape=(n, n))
+    return result
 
 
 def find_m_nearest_idx(m: int, p_i: int, distance_matrix: np.ndarray, selected_idx: np.ndarray) -> np.ndarray:

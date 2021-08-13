@@ -69,7 +69,7 @@ def perform_clustering(
 
     # 02. Create a distance matrix
     click.secho(f"02. Creating a distance matrix of {num_samples}x{num_samples} shape...", bold=True)
-    distance_matrix = create_distance_matrix(samples)
+    distance_matrix = create_distance_matrix(samples, operating_dir)
 
     # 03. Perform binning using specified solver and metric
     click.secho(f"03. Performing binning using {qp_solver} solver", bold=True)
