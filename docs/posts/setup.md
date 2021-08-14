@@ -13,10 +13,10 @@ in `config/default.ini`.
 
 ```ini
 [COMMANDS]
-FragGeneScan = PATH OF run_FragGeneScan.pl
-HmmSearch = PATH OF hmmsearch
-KMerCounter = PATH OF kmer-counter
-Seq2Vec = PATH OF seq2vec
+FragGeneScan = DIR OF run_FragGeneScan.pl
+Hmmer = DIR OF Hmmer
+KMerCounter = DIR OF kmer-counter
+Seq2Vec = DIR OF seq2vec
 
 [RESOURCES]
 MarkersHmm = PATH OF marker.hmm
