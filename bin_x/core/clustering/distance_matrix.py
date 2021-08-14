@@ -1,9 +1,9 @@
+import time
 from pathlib import Path
 
 import numpy as np
 from numpy.lib.format import open_memmap
 from scipy.spatial.distance import cdist
-from tqdm import tqdm
 
 
 def create_distance_matrix(arr: np.ndarray, operating_dir: Path) -> np.ndarray:
@@ -12,11 +12,12 @@ def create_distance_matrix(arr: np.ndarray, operating_dir: Path) -> np.ndarray:
     The (i,j) element of matrix will have the euclidean distance from ith point to the jth point.
     """
     n = len(arr)
+    start_time = time.time()
     file_name = operating_dir / "distance_matrix.npy"
     result = open_memmap(filename=file_name, mode="w+", shape=(n, n))
-    for i in tqdm(range(n), desc="Distance matrix", ncols=80):
-        result[i] = cdist([arr[i]], arr, metric="euclidean")
+    cdist(arr, arr, metric="euclidean", out=result)
     result.flush()
+    print(f"Distance matrix calculated in {time.time() - start_time}s")
     result = open_memmap(filename=file_name, mode="r", shape=(n, n))
     return result
 
