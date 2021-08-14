@@ -1,4 +1,5 @@
 import datetime
+import shutil
 import time
 import tracemalloc
 from pathlib import Path
@@ -48,6 +49,8 @@ def evaluate(config: Path, contigs: Path, coverages: Path, out: Path, ground_tru
         parameters = USER_CONFIG["PARAMETERS"]
 
         out = out / datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        out.mkdir(parents=True, exist_ok=True)
+        shutil.copy(config, out / "config.ini")
         features_out = out / "features"
 
         start = time.time()
