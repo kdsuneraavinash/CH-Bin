@@ -1,6 +1,5 @@
-import time
-
 import numpy as np
+from tqdm import tqdm
 
 from bin_x.core.clustering.distance_matrix import find_m_nearest_idx
 from bin_x.core.clustering.hull_distance import (
@@ -58,10 +57,10 @@ def fit_cluster(
     curr_bins: np.ndarray = initial_bins.copy()
 
     for i_iter in range(max_iterations):
-        start_timestamp = time.time()
 
-        for i, i_sample in enumerate(np.random.permutation(num_samples)):
-            print(f"Iteration {i_iter + 1} progress: {i}/{num_samples}", end="\r")
+        for i, i_sample in tqdm(
+            enumerate(np.random.permutation(num_samples)), desc=f"Iteration {i_iter + 1}", total=num_samples, ncols=80
+        ):
             min_distance: float = np.inf
             min_cluster: int = curr_bins[i_sample]
 
@@ -76,16 +75,12 @@ def fit_cluster(
 
             curr_bins[i_sample] = min_cluster  # Assign xi to cluster with smallest distance
 
-        end_timestamp = time.time()
-        print(f"Iteration {i_iter + 1} took {end_timestamp - start_timestamp}s")
-
         # If the assignments did not change, break
         diff_bins = initial_bins != curr_bins
         if not np.any(diff_bins):
             print("No changes done with previous iteration... Stopping at iteration", i_iter + 1)
             break
-        print(f"Points changing cluster : {np.average(diff_bins) * 100}%")
-        print()
+        print(f"Points changing cluster : {np.average(diff_bins) * 100}% ({sum(diff_bins)} points)")
 
         initial_bins = curr_bins
         curr_bins = curr_bins.copy()

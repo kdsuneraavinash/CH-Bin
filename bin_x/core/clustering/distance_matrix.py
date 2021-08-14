@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy as np
 from numpy.lib.format import open_memmap
 from scipy.spatial.distance import cdist
+from tqdm import tqdm
 
 
 def create_distance_matrix(arr: np.ndarray, operating_dir: Path) -> np.ndarray:
@@ -13,7 +14,7 @@ def create_distance_matrix(arr: np.ndarray, operating_dir: Path) -> np.ndarray:
     n = len(arr)
     file_name = operating_dir / "distance_matrix.npy"
     result = open_memmap(filename=file_name, mode="w+", shape=(n, n))
-    for i in range(n):
+    for i in tqdm(range(n), desc="Distance matrix", ncols=80):
         result[i] = cdist([arr[i]], arr, metric="euclidean")
     result.flush()
     result = open_memmap(filename=file_name, mode="r", shape=(n, n))
