@@ -16,6 +16,7 @@ install_requires = [
     "scipy>=1.7.1,<2.0.0",
     "seaborn>=0.11.1,<0.12.0",
     "sklearn>=0.0,<0.1",
+    "tqdm>=4.62.0,<5.0.0",
 ]
 
 with open("README.md") as readme_file:
