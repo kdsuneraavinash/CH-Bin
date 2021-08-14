@@ -1,3 +1,4 @@
+import os
 from configparser import SectionProxy
 from pathlib import Path
 
@@ -6,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from numpy.lib.format import open_memmap
 
 from bin_x.cli.utils import handle_error, reduce_dimensions_to_2d
 from bin_x.core.clustering.algorithm import fit_cluster
@@ -69,7 +71,8 @@ def perform_clustering(
 
     # 02. Create a distance matrix
     click.secho(f"02. Creating a distance matrix of {num_samples}x{num_samples} shape...", bold=True)
-    distance_matrix = create_distance_matrix(samples, operating_dir)
+    distance_matrix_filename = create_distance_matrix(samples, operating_dir)
+    distance_matrix = open_memmap(filename=distance_matrix_filename, mode="r", shape=(num_samples, num_samples))
 
     # 03. Perform binning using specified solver and metric
     click.secho(f"03. Performing binning using {qp_solver} solver", bold=True)
@@ -84,6 +87,9 @@ def perform_clustering(
         metric=metric,
         qp_solver=qp_solver,
     )
+
+    # Delete the distance matrix file
+    os.remove(distance_matrix_filename)
     if np.any(convex_labels < 0):
         raise ValueError("There were some un-clustered points left... Aborting.")
 
