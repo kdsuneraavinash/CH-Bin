@@ -113,6 +113,7 @@ def evaluate(
 @click.option("-o", "--out", help="The output directory for the tool.", type=Path, default=Path("out"))
 def run(config: Path, contigs: Path, coverages: Path, out: Path):
     try:
+        np.random.seed(0)
         USER_CONFIG.read(config)
         parameters = USER_CONFIG["PARAMETERS"]
         features_out = out / "features"
