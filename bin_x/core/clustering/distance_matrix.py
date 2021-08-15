@@ -21,34 +21,26 @@ def create_distance_matrix(arr: np.ndarray, operating_dir: Path) -> Path:
     return filename
 
 
-def find_m_nearest_idx(m: int, p_i: int, distance_matrix: np.ndarray, selected_idx: np.ndarray) -> np.ndarray:
+def find_m_nearest_neighbors(distance_row: np.ndarray, n_clusters: int, clusters: np.ndarray, m: int):
     """
-    Finds the indices of m nearest neighbors of point p given by p_i.
-    (Notice that p_i is the index of p, not the actual point itself and this returns indices of the m nearest neighbors,
-    not the points themselves.) Uses distance matrix D to calculate the nearest points. selected_idx can be used to
-    filter only the required points. Only the indices provided in selected_idx array will be considered for finding
-    neighbors.
+    Finds the indices of m nearest neighbors of the distance matrix row given.
+    This will return all nearest neighbors in all clusters.
+    The result will be a list of indices with indices being of the original array that created distance matrix.
 
-    Note: p will not be considered as a nearest neighbor to p, even if p_i is provided in selected_idx.
+    Note: p will not be considered as a nearest neighbor to p.
 
-    Warning: If the selected_idx filter is given less number of indices than m,
-    this will throw an error return the selected_idx itself.
-
-    :param m: Number of nearest neighbors to find.
-    :param p_i: Index of point to find the neighbors.
-    :param distance_matrix: Distance matrix.
-    :param selected_idx: Filter for the required points.
+    :param distance_row: Number of nearest neighbors to find.
+    :param n_clusters: Index of point to find the neighbors.
+    :param clusters: Distance matrix.
+    :param m: Filter for the required points.
     :return: M nearest neighbor indices.
     """
-
-    if len(selected_idx) == 0:
-        print("Warning: find_m_nearest_idx received 0 points to find neighbors.")
-        return np.zeros(0)
-    if len(selected_idx) < m:
-        return selected_idx[:]
-
-    dist_i = np.ones(len(distance_matrix)) * np.inf
-    dist_i[selected_idx] = distance_matrix[p_i, selected_idx]
-    dist_i[p_i] = np.inf  # this does not mutate original D
-    sorted_dist_idx = np.argpartition(dist_i, m)
-    return sorted_dist_idx[:m]
+    result = []
+    for c in range(n_clusters):
+        idx = np.where(clusters == c)[0]
+        if len(idx) <= m:
+            result.append(idx)
+        else:
+            res_idx = np.argpartition(distance_row[idx], m)[:m]
+            result.append(idx[res_idx])
+    return result

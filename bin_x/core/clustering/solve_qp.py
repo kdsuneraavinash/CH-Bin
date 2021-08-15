@@ -8,8 +8,6 @@ variables, while the matrix-vector couples (G,h) and (A,b) respectively define i
 Derived from: https://scaron.info/blog/quadratic-programming-in-python.html
 """
 
-from typing import Optional
-
 import cvxopt
 import numpy as np
 import quadprog
@@ -22,8 +20,8 @@ def _quadprog_solve_qp(
     vec_q: np.ndarray,
     mat_g: np.ndarray,
     vec_h: np.ndarray,
-    mat_a: Optional[np.ndarray] = None,
-    vec_b: Optional[np.ndarray] = None,
+    mat_a: np.ndarray,
+    vec_b: np.ndarray,
 ) -> np.ndarray:
     """
     Use CVXOPT to calculate to solve the quadratic equation.
@@ -47,24 +45,20 @@ def _quadprog_solve_qp(
     qp_g = nearest_positive_definite(qp_g)
 
     qp_a = -vec_q
-    if mat_a is not None and vec_b is not None:
-        qp_c = -np.vstack([mat_a, mat_g]).T
-        qp_b = -np.hstack([vec_b, vec_h])
-        meq = mat_a.shape[0]
-    else:
-        qp_c = -mat_g.T
-        qp_b = -vec_h
-        meq = 0
+    qp_c = -np.concatenate((mat_a, mat_g), axis=0).T
+    qp_b = -np.concatenate((vec_b, vec_h), axis=0)
+    meq = mat_a.shape[0]
+
     return quadprog.solve_qp(qp_g, qp_a, qp_c, qp_b, meq)[0]
 
 
 def _cvxopt_solve_qp(
     mat_p: np.ndarray,
     vec_q: np.ndarray,
-    mat_g: Optional[np.ndarray] = None,
-    vec_h: Optional[np.ndarray] = None,
-    mat_a: Optional[np.ndarray] = None,
-    vec_b: Optional[np.ndarray] = None,
+    mat_g: np.ndarray,
+    vec_h: np.ndarray,
+    mat_a: np.ndarray,
+    vec_b: np.ndarray,
 ) -> np.ndarray:
     """
     Use CVXOPT to calculate to solve the quadratic equation.
@@ -85,11 +79,14 @@ def _cvxopt_solve_qp(
     """
     mat_p = 0.5 * (mat_p + mat_p.T)
 
-    args = [cvxopt.matrix(mat_p), cvxopt.matrix(vec_q)]
-    if mat_g is not None:
-        args.extend([cvxopt.matrix(mat_g), cvxopt.matrix(vec_h)])
-        if mat_a is not None:
-            args.extend([cvxopt.matrix(mat_a), cvxopt.matrix(vec_b)])
+    args = [
+        cvxopt.matrix(mat_p),
+        cvxopt.matrix(vec_q),
+        cvxopt.matrix(mat_g),
+        cvxopt.matrix(vec_h),
+        cvxopt.matrix(mat_a),
+        cvxopt.matrix(vec_b),
+    ]
     cvxopt.solvers.options["show_progress"] = False
     sol = cvxopt.solvers.qp(*args)
     if "optimal" not in sol["status"]:
@@ -102,8 +99,8 @@ def solve_qp(
     vec_q: np.ndarray,
     mat_g: np.ndarray,
     vec_h: np.ndarray,
-    mat_a: Optional[np.ndarray] = None,
-    vec_b: Optional[np.ndarray] = None,
+    mat_a: np.ndarray,
+    vec_b: np.ndarray,
     solver: str = "quadprog",
 ) -> np.ndarray:
     """

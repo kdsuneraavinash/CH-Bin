@@ -21,14 +21,16 @@ def convex_hull_distance(query: np.ndarray, points: np.ndarray, solver: str = "q
     mat_g = -np.eye(n)  # second greater than zero constraint
     vec_h = np.zeros(n)  # second constraint RHS having 0
 
-    mat_x = points.copy().T  # points in cluster
-    x = query.copy().T  # query point
+    mat_x = points.T  # points in cluster
+    mat_x_t = points
+    x = query.T  # query point
+    x_t = query
 
-    mat_p = 2 * np.matmul(mat_x.T, mat_x)
-    vec_q = (-2 * np.matmul(x.T, mat_x)).T
+    mat_p = 2 * np.matmul(mat_x_t, mat_x)
+    vec_q = (-2 * np.matmul(x_t, mat_x)).T
 
     alpha = solve_qp(mat_p, vec_q, mat_g, vec_h, mat_a, vec_b, solver)
-    proj = np.matmul(alpha, mat_x.T)
+    proj = np.matmul(alpha, mat_x_t)
     return np.linalg.norm(proj - x)
 
 
