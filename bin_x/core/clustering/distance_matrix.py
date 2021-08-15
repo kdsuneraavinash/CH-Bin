@@ -19,3 +19,21 @@ def create_distance_matrix(arr: np.ndarray, operating_dir: Path) -> Path:
     result.flush()
     print(f"Distance matrix calculated in {time.time() - start_time}s")
     return filename
+
+
+def find_nearest_from_cluster(c: int, curr_bins: np.ndarray, distance_row: np.ndarray, m: int) -> np.ndarray:
+    """
+    Find m closest points from the a cluster to a query sample point (denoted by its distance matrix row).
+
+    :param c: Processing cluster number.
+    :param curr_bins: Array with cluster assignments of all points.
+    :param distance_row: Distance matrix row for the sample.
+    :param m: Number of nearest points to consider.
+    :return: All indices of nearest sample points.
+    """
+    cluster_point_idx = np.where(curr_bins == c)[0]
+    if len(cluster_point_idx) <= m:
+        return cluster_point_idx
+    distance_values = distance_row[cluster_point_idx]
+    closest_points_filter = np.argpartition(distance_values, kth=m - 1)[:m]
+    return cluster_point_idx[closest_points_filter]
