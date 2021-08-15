@@ -3,6 +3,7 @@ import shutil
 import time
 import tracemalloc
 from pathlib import Path
+from typing import Optional
 
 import click
 import numpy as np
@@ -40,10 +41,19 @@ def cli():
 @click.option("-i", "--contigs", required=True, help="The contig file to perform the binning operation.", type=Path)
 @click.option("-c", "--coverages", required=True, help="The tab-seperated file with abundance data.", type=Path)
 @click.option("-g", "--ground_truth", required=True, help="The ground truth CSV.", type=Path)
+@click.option("-f", "--features_csv", help="The ground truth CSV.", type=Path)
 @click.option("-s", "--config", help="The configuration file path.", type=Path, default=Path("config/default.ini"))
 @click.option("-o", "--out", help="The output directory for the tool.", type=Path, default=Path("out"))
 @click.option("-t", "--n_iter", help="Number of Iterations to run.", type=int, default=1)
-def evaluate(config: Path, contigs: Path, coverages: Path, out: Path, ground_truth: Path, n_iter: int):
+def evaluate(
+    config: Path,
+    contigs: Path,
+    coverages: Path,
+    out: Path,
+    ground_truth: Path,
+    features_csv: Optional[Path],
+    n_iter: int,
+):
     try:
         USER_CONFIG.read(config)
         parameters = USER_CONFIG["PARAMETERS"]
@@ -56,7 +66,8 @@ def evaluate(config: Path, contigs: Path, coverages: Path, out: Path, ground_tru
         start = time.time()
         tracemalloc.start()
 
-        features_csv = run_create_dataset(contigs, coverages, features_out, parameters)
+        if features_csv is None:
+            features_csv = run_create_dataset(contigs, coverages, features_out, parameters)
         data = []
         for i in range(n_iter):
             dir_index = str(i + 1)

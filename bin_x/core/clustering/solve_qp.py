@@ -41,8 +41,7 @@ def _quadprog_solve_qp(
     :param vec_b: Vector b.
     :return: The solution vector.
     """
-    qp_g = 0.5 * (mat_p + mat_p.T)
-    qp_g = nearest_positive_definite(qp_g)
+    qp_g = nearest_positive_definite(mat_p)
 
     qp_a = -vec_q
     qp_c = -np.concatenate((mat_a, mat_g), axis=0).T
