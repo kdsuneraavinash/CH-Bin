@@ -1,7 +1,6 @@
 import numpy as np
 from tqdm import tqdm
 
-from bin_x.core.clustering.distance_matrix import find_m_nearest_neighbors
 from bin_x.core.clustering.hull_distance import (
     affine_hull_distance,
     convex_hull_distance,
@@ -70,11 +69,17 @@ def fit_cluster(
 
             # Reassign point to the closest cluster.
             curr_bins[i_sample] = -1
-            neighbor_idx = find_m_nearest_neighbors(distance_matrix[i_sample], num_clusters, curr_bins, m=num_neighbors)
 
             for c in range(num_clusters):
-                # Find convex hull distance
-                distance = _calculate_distance(samples[i_sample], samples[neighbor_idx[c]], qp_solver, metric)
+                # 01. Find m closest points from the cluster - O(NC)
+                cluster_point_idx = np.where(curr_bins == c)[0]
+                if len(cluster_point_idx) > num_neighbors:
+                    distance_row = distance_matrix[i_sample][cluster_point_idx]
+                    closest_points_filter = np.argpartition(distance_row, kth=num_neighbors - 1)[:num_neighbors]
+                    cluster_point_idx = cluster_point_idx[closest_points_filter]
+
+                # 02. Find convex hull distance - O(1) for fixed m
+                distance = _calculate_distance(samples[i_sample], samples[cluster_point_idx], qp_solver, metric)
                 if min_distance > distance:
                     min_distance, min_cluster = distance, c
 

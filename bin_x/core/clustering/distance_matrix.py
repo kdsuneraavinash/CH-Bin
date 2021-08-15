@@ -19,28 +19,3 @@ def create_distance_matrix(arr: np.ndarray, operating_dir: Path) -> Path:
     result.flush()
     print(f"Distance matrix calculated in {time.time() - start_time}s")
     return filename
-
-
-def find_m_nearest_neighbors(distance_row: np.ndarray, n_clusters: int, clusters: np.ndarray, m: int):
-    """
-    Finds the indices of m nearest neighbors of the distance matrix row given.
-    This will return all nearest neighbors in all clusters.
-    The result will be a list of indices with indices being of the original array that created distance matrix.
-
-    Note: p will not be considered as a nearest neighbor to p.
-
-    :param distance_row: Number of nearest neighbors to find.
-    :param n_clusters: Index of point to find the neighbors.
-    :param clusters: Distance matrix.
-    :param m: Filter for the required points.
-    :return: M nearest neighbor indices.
-    """
-    result = []
-    for c in range(n_clusters):
-        idx = np.where(clusters == c)[0]
-        if len(idx) <= m:
-            result.append(idx)
-        else:
-            res_idx = np.argpartition(distance_row[idx], m)[:m]
-            result.append(idx[res_idx])
-    return result
