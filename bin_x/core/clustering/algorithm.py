@@ -64,6 +64,10 @@ def fit_cluster(
             min_distance: float = np.inf
             min_cluster: int = curr_bins[i_sample]
 
+            # Do not change my cluster if I am the final point in it.
+            if np.count_nonzero(curr_bins == curr_bins[i_sample]) <= 1:
+                continue
+
             # Reassign point to the closest cluster.
             curr_bins[i_sample] = -1
             neighbor_idx = find_m_nearest_neighbors(distance_matrix[i_sample], num_clusters, curr_bins, m=num_neighbors)
