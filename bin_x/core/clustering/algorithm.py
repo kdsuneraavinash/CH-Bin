@@ -55,6 +55,7 @@ def fit_cluster(
     points_to_assign: np.ndarray = np.where(curr_bins == -1)[0]
     num_points_to_assign = len(points_to_assign)
 
+    distance_row = np.empty(shape=(len(samples),))
     for i_iter in range(max_iterations):
 
         for i_sample in tqdm(
@@ -69,7 +70,7 @@ def fit_cluster(
             # Reassign point to the closest cluster.
             curr_bins[i_sample] = -1
 
-            distance_row = distance_matrix[i_sample].copy()
+            distance_row[:] = distance_matrix[i_sample, :]
             for c in range(num_clusters):
                 # 01. Find m closest points from the cluster - O(NC)
                 cluster_point_idx = np.where(curr_bins == c)[0]
