@@ -18,10 +18,11 @@ be on the order of 1e-16. In practice, both ways converge.
 [2] N.J. Higham, "Computing a nearest symmetric positive semidefinite matrix" (1988):
 https://doi.org/10.1016/0024-3795(88)90223-6
 """
-
+import numba
 import numpy as np
 
 
+@numba.njit()
 def nearest_positive_definite(mat_a: np.ndarray) -> np.ndarray:
     """
     Calculates the nearest positive definite matrix to the given matrix.
@@ -47,9 +48,14 @@ def nearest_positive_definite(mat_a: np.ndarray) -> np.ndarray:
     return mat_a3
 
 
+@numba.njit()
 def is_positive_definite(mat_a) -> bool:
     """
     Returns whether the given matrix is positive definite.
+
+    Note: The exceptions raised should be np.linalg.LinAlgError, but
+    we need to improve performance using numba, which only supports
+    catching exceptions of Exception type.
 
     :param mat_a: Input matrix.
     :return: Whether the matrix is positive definite.
@@ -58,5 +64,5 @@ def is_positive_definite(mat_a) -> bool:
     try:
         _ = np.linalg.cholesky(mat_a)
         return True
-    except np.linalg.LinAlgError:
+    except Exception:  # noqa
         return False
