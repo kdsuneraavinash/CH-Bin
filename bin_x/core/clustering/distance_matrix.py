@@ -38,6 +38,7 @@ def find_m_nearest_neighbors(distance_row: np.ndarray, n_clusters: int, clusters
     result = []
     for c in range(n_clusters):
         idx = np.where(clusters == c)[0]
+        assert len(idx) != 0
         if len(idx) <= m:
             result.append(idx)
         else:

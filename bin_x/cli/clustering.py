@@ -1,6 +1,7 @@
 import os
 from configparser import SectionProxy
 from pathlib import Path
+from typing import Optional
 
 import click
 import matplotlib.pyplot as plt
@@ -43,6 +44,7 @@ def perform_clustering(
     max_iterations: int = 10,
     metric: str = "convex",
     qp_solver: str = "quadprog",
+    distance_matrix_filename: Optional[Path] = None,
 ) -> Path:
     """
     Perform binning and output the binning result.
@@ -53,6 +55,7 @@ def perform_clustering(
     :param max_iterations: Number of maximum iterations to perform.
     :param metric: Polytope distance matrix (convex/affine)
     :param qp_solver: Quadratic programming problem solver. (quadprog/cvxopt)
+    :param distance_matrix_filename: Previously computed distance matrix.
     :return: Path of the binning result dataset.
     """
     dist_bin_csv = operating_dir / "bin.csv"
@@ -70,8 +73,9 @@ def perform_clustering(
     num_samples = len(samples)
 
     # 02. Create a distance matrix
-    click.secho(f"02. Creating a distance matrix of {num_samples}x{num_samples} shape...", bold=True)
-    distance_matrix_filename = create_distance_matrix(samples, operating_dir)
+    if distance_matrix_filename is None:
+        click.secho(f"02. Creating a distance matrix of {num_samples}x{num_samples} shape...", bold=True)
+        distance_matrix_filename = create_distance_matrix(samples, operating_dir)
     distance_matrix = open_memmap(filename=distance_matrix_filename, mode="r", shape=(num_samples, num_samples))
 
     # 03. Perform binning using specified solver and metric
@@ -112,13 +116,19 @@ def perform_clustering(
     return dist_bin_csv
 
 
-def run_perform_clustering(features_csv: Path, operating_dir: Path, parameters: SectionProxy) -> Path:
+def run_perform_clustering(
+    features_csv: Path,
+    operating_dir: Path,
+    parameters: SectionProxy,
+    distance_matrix_filename: Optional[Path] = None,
+) -> Path:
     """
     Perform binning and output the binning result.
 
     :param features_csv: CSV containing the feature vectors and initial bins.
     :param operating_dir: Directory to write temp files to.
     :param parameters: Parameters INI section.
+    :param distance_matrix_filename: Previously computed distance matrix.
     :return: Path of the binning result dataset.
     """
 
@@ -129,6 +139,7 @@ def run_perform_clustering(features_csv: Path, operating_dir: Path, parameters: 
         max_iterations=int(parameters["AlgoMaxIterations"]),
         metric=parameters["AlgoDistanceMetric"],
         qp_solver=parameters["AlgoQpSolver"],
+        distance_matrix_filename=distance_matrix_filename,
     )
 
 

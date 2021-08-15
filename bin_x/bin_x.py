@@ -41,7 +41,8 @@ def cli():
 @click.option("-i", "--contigs", required=True, help="The contig file to perform the binning operation.", type=Path)
 @click.option("-c", "--coverages", required=True, help="The tab-seperated file with abundance data.", type=Path)
 @click.option("-g", "--ground_truth", required=True, help="The ground truth CSV.", type=Path)
-@click.option("-f", "--features_csv", help="The ground truth CSV.", type=Path)
+@click.option("-f", "--cached_features", help="The features CSV.", type=Path)
+@click.option("-f", "--cached_distance_matrix", help="The distance matrix file.", type=Path)
 @click.option("-s", "--config", help="The configuration file path.", type=Path, default=Path("config/default.ini"))
 @click.option("-o", "--out", help="The output directory for the tool.", type=Path, default=Path("out"))
 @click.option("-t", "--n_iter", help="Number of Iterations to run.", type=int, default=1)
@@ -51,7 +52,8 @@ def evaluate(
     coverages: Path,
     out: Path,
     ground_truth: Path,
-    features_csv: Optional[Path],
+    cached_features: Optional[Path],
+    cached_distance_matrix: Optional[Path],
     n_iter: int,
 ):
     try:
@@ -66,6 +68,7 @@ def evaluate(
         start = time.time()
         tracemalloc.start()
 
+        features_csv = cached_features
         if features_csv is None:
             features_csv = run_create_dataset(contigs, coverages, features_out, parameters)
         data = []
@@ -76,7 +79,9 @@ def evaluate(
             results_csv = out / dir_index / "results.csv"
 
             click.secho(f"\nIteration {i + 1}\n", fg="magenta", bold=True)
-            dist_bin_csv = run_perform_clustering(features_csv, clustering_out, parameters)
+            dist_bin_csv = run_perform_clustering(
+                features_csv, clustering_out, parameters, distance_matrix_filename=cached_distance_matrix
+            )
             precision, recall, f1, ari = run_analyze(contigs, ground_truth, dist_bin_csv, analysis_out, parameters)
             data.append([i, precision, recall, f1, ari])
         df = pd.DataFrame(data, columns=["iteration", "precision", "recall", "f1", "ari"])
