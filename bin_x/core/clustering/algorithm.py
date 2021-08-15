@@ -55,18 +55,18 @@ def fit_cluster(
     """
 
     curr_bins: np.ndarray = initial_bins.copy()
+    points_to_assign: np.ndarray = np.where(curr_bins == -1)[0]
 
     for i_iter in range(max_iterations):
 
         for i, i_sample in tqdm(
-            enumerate(np.random.permutation(num_samples)), desc=f"Iteration {i_iter + 1}", total=num_samples, ncols=80
+            enumerate(np.random.permutation(points_to_assign)),
+            desc=f"Iteration {i_iter + 1}",
+            total=num_samples,
+            ncols=80,
         ):
             min_distance: float = np.inf
             min_cluster: int = curr_bins[i_sample]
-
-            # Do not change my cluster if I am the final point in it.
-            if np.count_nonzero(curr_bins == min_cluster) <= 1 and min_cluster != -1:
-                continue
 
             # Reassign point to the closest cluster.
             curr_bins[i_sample] = -1
