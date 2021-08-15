@@ -64,8 +64,8 @@ def fit_cluster(
             min_distance: float = np.inf
             min_cluster: int = curr_bins[i_sample]
 
-            # Dont change me if I am the only point in the cluster.
-            if len(curr_bins == curr_bins[i_sample]) <= 1:
+            # Do not change my cluster if I am the final point in it.
+            if np.count_nonzero(curr_bins == min_cluster) <= 1 and min_cluster != -1:
                 continue
 
             # Reassign point to the closest cluster.
@@ -73,9 +73,6 @@ def fit_cluster(
             neighbor_idx = find_m_nearest_neighbors(distance_matrix[i_sample], num_clusters, curr_bins, m=num_neighbors)
 
             for c in range(num_clusters):
-                # No clusters should have 0 points.
-                assert len(samples[neighbor_idx[c]]) != 0
-
                 # Find convex hull distance
                 distance = _calculate_distance(samples[i_sample], samples[neighbor_idx[c]], qp_solver, metric)
                 if min_distance > distance:
