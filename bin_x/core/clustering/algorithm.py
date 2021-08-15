@@ -5,7 +5,6 @@ from bin_x.core.clustering.hull_distance import (
     affine_hull_distance,
     convex_hull_distance,
 )
-from bin_x.core.utils import profile
 
 
 def _calculate_distance(x: np.ndarray, mat_p: np.ndarray, qp_solver: str, metric: str) -> float:
@@ -27,9 +26,7 @@ def _calculate_distance(x: np.ndarray, mat_p: np.ndarray, qp_solver: str, metric
     raise NotImplementedError(f"Metric {metric} not implemented")
 
 
-@profile(cumulative=True, print_stats=True)
 def fit_cluster(
-    num_samples: int,
     samples: np.ndarray,
     num_clusters: int,
     initial_bins: np.ndarray,
@@ -43,7 +40,6 @@ def fit_cluster(
     Perform the Cevikalp et. al. 2019 convex hull binning algorithm
     specialized for metagenomic binning.
 
-    :param num_samples: Number of samples in given dataset.
     :param samples: Dataset points.
     :param num_clusters: Number of clusters.
     :param num_neighbors: Number of neighbors to consider for polytope.
@@ -57,13 +53,14 @@ def fit_cluster(
 
     curr_bins: np.ndarray = initial_bins.copy()
     points_to_assign: np.ndarray = np.where(curr_bins == -1)[0]
+    num_points_to_assign = len(points_to_assign)
 
     for i_iter in range(max_iterations):
 
-        for i, i_sample in tqdm(
-            enumerate(np.random.permutation(points_to_assign)),
+        for i_sample in tqdm(
+            np.random.permutation(points_to_assign),
             desc=f"Iteration {i_iter + 1}",
-            total=num_samples,
+            total=num_points_to_assign,
             ncols=80,
         ):
             min_distance: float = np.inf
