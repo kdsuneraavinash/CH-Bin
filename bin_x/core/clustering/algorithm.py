@@ -5,6 +5,7 @@ from bin_x.core.clustering.hull_distance import (
     affine_hull_distance,
     convex_hull_distance,
 )
+from bin_x.core.utils import profile
 
 
 def _calculate_distance(x: np.ndarray, mat_p: np.ndarray, qp_solver: str, metric: str) -> float:
@@ -26,6 +27,7 @@ def _calculate_distance(x: np.ndarray, mat_p: np.ndarray, qp_solver: str, metric
     raise NotImplementedError(f"Metric {metric} not implemented")
 
 
+@profile(cumulative=True, print_stats=True)
 def fit_cluster(
     num_samples: int,
     samples: np.ndarray,

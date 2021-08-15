@@ -47,6 +47,7 @@ def evaluate(
     n_iter: int,
 ):
     try:
+        np.random.seed(0)
         USER_CONFIG.read(config)
         parameters = USER_CONFIG["PARAMETERS"]
 
