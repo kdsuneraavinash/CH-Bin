@@ -44,7 +44,7 @@ def perform_clustering(
     max_iterations: int = 10,
     metric: str = "convex",
     qp_solver: str = "quadprog",
-    distance_matrix_filename: Optional[Path] = None,
+    distance_matrix_cache: Optional[Path] = None,
 ) -> Path:
     """
     Perform binning and output the binning result.
@@ -55,7 +55,7 @@ def perform_clustering(
     :param max_iterations: Number of maximum iterations to perform.
     :param metric: Polytope distance matrix (convex/affine)
     :param qp_solver: Quadratic programming problem solver. (quadprog/cvxopt)
-    :param distance_matrix_filename: Previously computed distance matrix.
+    :param distance_matrix_cache: Previously computed distance matrix.
     :return: Path of the binning result dataset.
     """
     dist_bin_csv = operating_dir / "bin.csv"
@@ -73,9 +73,12 @@ def perform_clustering(
     num_samples = len(samples)
 
     # 02. Create a distance matrix
+    distance_matrix_filename = distance_matrix_cache
     if distance_matrix_filename is None:
         click.secho(f"02. Creating a distance matrix of {num_samples}x{num_samples} shape...", bold=True)
         distance_matrix_filename = create_distance_matrix(samples, operating_dir)
+    else:
+        click.secho(f"02. Reusing a distance matrix at {distance_matrix_filename}...", bold=True)
     distance_matrix = open_memmap(filename=distance_matrix_filename, mode="r", shape=(num_samples, num_samples))
 
     # 03. Perform binning using specified solver and metric
@@ -92,8 +95,9 @@ def perform_clustering(
         qp_solver=qp_solver,
     )
 
-    # Delete the distance matrix file
-    os.remove(distance_matrix_filename)
+    # Delete the distance matrix file (dont delete if using a cache)
+    if distance_matrix_cache is None:
+        os.remove(distance_matrix_filename)
     if np.any(convex_labels < 0):
         raise ValueError("There were some un-clustered points left... Aborting.")
 
@@ -120,15 +124,16 @@ def run_perform_clustering(
     features_csv: Path,
     operating_dir: Path,
     parameters: SectionProxy,
-    distance_matrix_filename: Optional[Path] = None,
+    distance_matrix_cache: Optional[Path] = None,
 ) -> Path:
     """
     Perform binning and output the binning result.
 
+
     :param features_csv: CSV containing the feature vectors and initial bins.
     :param operating_dir: Directory to write temp files to.
     :param parameters: Parameters INI section.
-    :param distance_matrix_filename: Previously computed distance matrix.
+    :param distance_matrix_cache: Previously computed distance matrix.
     :return: Path of the binning result dataset.
     """
 
@@ -139,7 +144,7 @@ def run_perform_clustering(
         max_iterations=int(parameters["AlgoMaxIterations"]),
         metric=parameters["AlgoDistanceMetric"],
         qp_solver=parameters["AlgoQpSolver"],
-        distance_matrix_filename=distance_matrix_filename,
+        distance_matrix_cache=distance_matrix_cache,
     )
 
 
@@ -149,6 +154,7 @@ def run_perform_clustering(
 @click.option("--out", prompt="Output Directory", help="The output directory for the tool.", type=Path)
 def main(config: Path, features: Path, out: Path):
     try:
+        np.random.seed(0)
         USER_CONFIG.read(config)
         parameters = USER_CONFIG["PARAMETERS"]
         run_perform_clustering(features, out, parameters)
