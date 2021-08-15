@@ -72,12 +72,13 @@ def fit_cluster(
             # Reassign point to the closest cluster.
             curr_bins[i_sample] = -1
 
+            distance_row = distance_matrix[i_sample].copy()
             for c in range(num_clusters):
                 # 01. Find m closest points from the cluster - O(NC)
                 cluster_point_idx = np.where(curr_bins == c)[0]
                 if len(cluster_point_idx) > num_neighbors:
-                    distance_row = distance_matrix[i_sample][cluster_point_idx]
-                    closest_points_filter = np.argpartition(distance_row, kth=num_neighbors - 1)[:num_neighbors]
+                    distance_values = distance_row[cluster_point_idx]
+                    closest_points_filter = np.argpartition(distance_values, kth=num_neighbors - 1)[:num_neighbors]
                     cluster_point_idx = cluster_point_idx[closest_points_filter]
 
                 # 02. Find convex hull distance - O(1) for fixed m
