@@ -84,7 +84,6 @@ def perform_clustering(
     # 03. Perform binning using specified solver and metric
     click.secho(f"03. Performing binning using {qp_solver} solver", bold=True)
     convex_labels = fit_cluster(
-        num_samples=num_samples,
         samples=samples,
         num_clusters=num_clusters,
         distance_matrix=distance_matrix,

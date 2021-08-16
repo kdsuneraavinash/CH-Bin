@@ -1,34 +1,11 @@
 import numpy as np
 from tqdm import tqdm
 
-from bin_x.core.clustering.distance_matrix import find_m_nearest_neighbors
-from bin_x.core.clustering.hull_distance import (
-    affine_hull_distance,
-    convex_hull_distance,
-)
-
-
-def _calculate_distance(x: np.ndarray, mat_p: np.ndarray, qp_solver: str, metric: str) -> float:
-    """
-    Function to find the distance from point x to a polytope defined by set P.
-    Uses the quadratic optimization to find the distance.
-
-    :param x: Query point.
-    :param mat_p: Matrix with polytope points.
-    :param qp_solver: Quadratic program solver algorithm.
-    :param metric: Metric to use.
-    :return: The distance from the query point to the polytope.
-    """
-
-    if metric == "convex":
-        return convex_hull_distance(x, mat_p, solver=qp_solver)
-    if metric == "affine":
-        return affine_hull_distance(x, mat_p, solver=qp_solver)
-    raise NotImplementedError(f"Metric {metric} not implemented")
+from bin_x.core.clustering.distance_matrix import find_nearest_from_cluster
+from bin_x.core.clustering.hull_distance import calculate_distance
 
 
 def fit_cluster(
-    num_samples: int,
     samples: np.ndarray,
     num_clusters: int,
     initial_bins: np.ndarray,
@@ -42,7 +19,6 @@ def fit_cluster(
     Perform the Cevikalp et. al. 2019 convex hull binning algorithm
     specialized for metagenomic binning.
 
-    :param num_samples: Number of samples in given dataset.
     :param samples: Dataset points.
     :param num_clusters: Number of clusters.
     :param num_neighbors: Number of neighbors to consider for polytope.
@@ -55,26 +31,24 @@ def fit_cluster(
     """
 
     curr_bins: np.ndarray = initial_bins.copy()
+    points_to_assign: np.ndarray = np.where(curr_bins == -1)[0]
+    num_points_to_assign = len(points_to_assign)
 
+    distance_row = np.empty(shape=(len(samples),))
     for i_iter in range(max_iterations):
 
-        for i, i_sample in tqdm(
-            enumerate(np.random.permutation(num_samples)), desc=f"Iteration {i_iter + 1}", total=num_samples, ncols=80
-        ):
+        sample_perm = np.random.permutation(points_to_assign)
+        for i_sample in tqdm(sample_perm, desc=f"Iteration {i_iter + 1}", total=num_points_to_assign, ncols=80):
             min_distance: float = np.inf
             min_cluster: int = curr_bins[i_sample]
 
-            # Do not change my cluster if I am the final point in it.
-            if np.count_nonzero(curr_bins == min_cluster) <= 1 and min_cluster != -1:
-                continue
-
-            # Reassign point to the closest cluster.
-            curr_bins[i_sample] = -1
-            neighbor_idx = find_m_nearest_neighbors(distance_matrix[i_sample], num_clusters, curr_bins, m=num_neighbors)
-
+            curr_bins[i_sample] = -1  # Remove the point from current cluster
+            distance_row[:] = distance_matrix[i_sample, :]
             for c in range(num_clusters):
-                # Find convex hull distance
-                distance = _calculate_distance(samples[i_sample], samples[neighbor_idx[c]], qp_solver, metric)
+                # 01. Find m closest points from the cluster
+                # 02. Find convex hull distance
+                cluster_point_idx = find_nearest_from_cluster(c, curr_bins, distance_row, num_neighbors)
+                distance = calculate_distance(samples[i_sample], samples[cluster_point_idx], qp_solver, metric)
                 if min_distance > distance:
                     min_distance, min_cluster = distance, c
 

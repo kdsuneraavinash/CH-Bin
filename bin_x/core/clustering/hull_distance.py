@@ -45,3 +45,22 @@ def affine_hull_distance(query: np.ndarray, points: np.ndarray, solver: str = "q
     """
 
     raise NotImplementedError()
+
+
+def calculate_distance(x: np.ndarray, mat_p: np.ndarray, qp_solver: str, metric: str) -> float:
+    """
+    Function to find the distance from point x to a polytope defined by set P.
+    Uses the quadratic optimization to find the distance.
+
+    :param x: Query point.
+    :param mat_p: Matrix with polytope points.
+    :param qp_solver: Quadratic program solver algorithm.
+    :param metric: Metric to use.
+    :return: The distance from the query point to the polytope.
+    """
+
+    if metric == "convex":
+        return convex_hull_distance(x, mat_p, solver=qp_solver)
+    if metric == "affine":
+        return affine_hull_distance(x, mat_p, solver=qp_solver)
+    raise NotImplementedError(f"Metric {metric} not implemented")

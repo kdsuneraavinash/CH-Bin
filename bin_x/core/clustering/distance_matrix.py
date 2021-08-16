@@ -21,26 +21,19 @@ def create_distance_matrix(arr: np.ndarray, operating_dir: Path) -> Path:
     return filename
 
 
-def find_m_nearest_neighbors(distance_row: np.ndarray, n_clusters: int, clusters: np.ndarray, m: int):
+def find_nearest_from_cluster(c: int, curr_bins: np.ndarray, distance_row: np.ndarray, m: int) -> np.ndarray:
     """
-    Finds the indices of m nearest neighbors of the distance matrix row given.
-    This will return all nearest neighbors in all clusters.
-    The result will be a list of indices with indices being of the original array that created distance matrix.
+    Find m closest points from the a cluster to a query sample point (denoted by its distance matrix row).
 
-    Note: p will not be considered as a nearest neighbor to p.
-
-    :param distance_row: Number of nearest neighbors to find.
-    :param n_clusters: Index of point to find the neighbors.
-    :param clusters: Distance matrix.
-    :param m: Filter for the required points.
-    :return: M nearest neighbor indices.
+    :param c: Processing cluster number.
+    :param curr_bins: Array with cluster assignments of all points.
+    :param distance_row: Distance matrix row for the sample.
+    :param m: Number of nearest points to consider.
+    :return: All indices of nearest sample points.
     """
-    result = []
-    for c in range(n_clusters):
-        idx = np.where(clusters == c)[0]
-        if len(idx) <= m:
-            result.append(idx)
-        else:
-            res_idx = np.argpartition(distance_row[idx], m)[:m]
-            result.append(idx[res_idx])
-    return result
+    cluster_point_idx = np.where(curr_bins == c)[0]
+    if len(cluster_point_idx) <= m:
+        return cluster_point_idx
+    distance_values = distance_row[cluster_point_idx]
+    closest_points_filter = np.argpartition(distance_values, kth=m - 1)[:m]
+    return cluster_point_idx[closest_points_filter]
