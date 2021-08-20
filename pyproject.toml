@@ -16,8 +16,6 @@ quadprog = "^0.1.8"
 cvxopt = "^1.2.6"
 scipy = "^1.7.1"
 sklearn = "^0.0"
-matplotlib = "^3.4.2"
-seaborn = "^0.11.1"
 tqdm = "^4.62.0"
 numba = "^0.53.1"
 

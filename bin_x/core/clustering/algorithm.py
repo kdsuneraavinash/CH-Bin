@@ -3,8 +3,10 @@ from tqdm import tqdm
 
 from bin_x.core.clustering.distance_matrix import find_nearest_from_cluster
 from bin_x.core.clustering.hull_distance import calculate_distance
+from bin_x.core.utils import profile
 
 
+@profile(cumulative=True, print_stats=True)
 def fit_cluster(
     samples: np.ndarray,
     num_clusters: int,
