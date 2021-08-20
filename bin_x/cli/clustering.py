@@ -37,7 +37,7 @@ def perform_clustering(
     operating_dir.mkdir(parents=True, exist_ok=True)
 
     # 01. Read feature CSV
-    click.secho(">> Reading feature CSV...", bold=True)
+    click.secho(">> Reading feature CSV...", fg="green", bold=True)
     df_features = pd.read_csv(features_csv)
 
     num_clusters = df_features.CLUSTER.max() + 1
@@ -48,14 +48,14 @@ def perform_clustering(
     # 02. Create a distance matrix
     distance_matrix_filename = distance_matrix_cache
     if distance_matrix_filename is None:
-        click.secho(f">> Creating a distance matrix of {num_samples}x{num_samples} shape...", bold=True)
+        click.secho(f">> Creating a distance matrix of {num_samples}x{num_samples} shape...", fg="green", bold=True)
         distance_matrix_filename = create_distance_matrix(samples, operating_dir)
     else:
-        click.secho(f">> Reusing a distance matrix at {distance_matrix_filename}...", bold=True)
+        click.secho(f">> Reusing a distance matrix at {distance_matrix_filename}...", fg="green", bold=True)
     distance_matrix = open_memmap(filename=distance_matrix_filename, mode="r", shape=(num_samples, num_samples))
 
     # 03. Perform binning using specified solver and metric
-    click.secho(f">> Performing binning using {qp_solver} solver", bold=True)
+    click.secho(f">> Performing binning using {qp_solver} solver", fg="green", bold=True)
     convex_labels = fit_cluster(
         samples=samples,
         num_clusters=num_clusters,
@@ -74,7 +74,7 @@ def perform_clustering(
         raise ValueError("There were some un-clustered points left... Aborting.")
 
     # 04. Assigning bins with majority voting (If there were more than one voting column)
-    click.secho(">> Assigning bins", bold=True)
+    click.secho(">> Assigning bins", fg="green", bold=True)
     df_samples: pd.DataFrame = df_features.drop("CLUSTER", axis=1)
     df_bin_column: pd.DataFrame = pd.DataFrame({"BIN": convex_labels})
 
@@ -83,7 +83,7 @@ def perform_clustering(
     df_dist_bin: pd.DataFrame = parent_groups.BIN.apply(lambda x: np.bincount(x).argmax()).reset_index()
     df_dist_bin.rename(columns={"PARENT_NAME": "CONTIG_NAME"}, inplace=True)
     df_dist_bin.to_csv(dist_bin_csv, index=False)  # noqa
-    click.secho(f"Dumped binning assignment CSV at {dist_bin_csv}", fg="green", bold=True)
+    click.secho(f"Dumped binning assignment CSV at {dist_bin_csv}", bold=True)
 
     return dist_bin_csv
 

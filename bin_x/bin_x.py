@@ -31,7 +31,7 @@ def run(config: Path, contigs: Path, coverages: Path, out: Path, distance_matrix
 
         features_csv = run_create_dataset(contigs, coverages, features_out, parameters)
         dist_bin_csv = run_perform_clustering(features_csv, clustering_out, parameters, distance_matrix_cache)
-        click.secho(f"Final Binning CSV is at {dist_bin_csv}", fg="green", bold=True)
+        click.secho(f"Final Binning CSV is at {dist_bin_csv}", bold=True)
     except Exception as e:
         handle_error(e)
 
