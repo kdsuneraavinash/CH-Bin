@@ -41,9 +41,9 @@ def create_dataset(
     :return: Path of merged dataset with initial bins marked.
     """
 
-    filtered_fasta = operating_dir / "filtered.fasta"
-    split_fasta = operating_dir / "split.fasta"
-    output_dataset_csv = operating_dir / "dataset.csv"
+    filtered_fasta = operating_dir / "filtered-contigs.fasta"
+    split_fasta = operating_dir / "split-contigs.fasta"
+    output_dataset_csv = operating_dir / "features.csv"
     kmers_operation_dir = operating_dir / "kmers"
     scm_operation_dir = operating_dir / "scm"
     operating_dir.mkdir(parents=True, exist_ok=True)

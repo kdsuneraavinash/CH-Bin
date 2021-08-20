@@ -10,9 +10,11 @@ from numpy.lib.format import open_memmap  # noqa
 
 from bin_x.core.clustering.algorithm import fit_cluster
 from bin_x.core.clustering.distance_matrix import create_distance_matrix
+from bin_x.core.clustering.dump_bins import dump_bins
 
 
 def perform_clustering(
+    contig_fasta: Path,
     features_csv: Path,
     operating_dir: Path,
     num_neighbors: int = 15,
@@ -24,6 +26,7 @@ def perform_clustering(
     """
     Perform binning and output the binning result.
 
+    :param contig_fasta: Contig file used for feature generation.
     :param features_csv: CSV containing the feature vectors and initial bins.
     :param operating_dir: Directory to write temp files to.
     :param num_neighbors: Number of neighbors to consider for polytope.
@@ -33,8 +36,10 @@ def perform_clustering(
     :param distance_matrix_cache: Previously computed distance matrix.
     :return: Path of the binning result dataset.
     """
-    dist_bin_csv = operating_dir / "bin.csv"
+    dist_bin_csv = operating_dir / "binning-assignment.csv"
+    bin_dump_dir = operating_dir / "bins"
     operating_dir.mkdir(parents=True, exist_ok=True)
+    bin_dump_dir.mkdir(parents=True, exist_ok=True)
 
     # 01. Read feature CSV
     click.secho(">> Reading feature CSV...", fg="green", bold=True)
@@ -51,7 +56,7 @@ def perform_clustering(
         click.secho(f">> Creating a distance matrix of {num_samples}x{num_samples} shape...", fg="green", bold=True)
         distance_matrix_filename = create_distance_matrix(samples, operating_dir)
     else:
-        click.secho(f">> Reusing a distance matrix at {distance_matrix_filename}...", fg="green", bold=True)
+        click.secho(f">> Reusing distance matrix at {distance_matrix_filename}...", fg="green", bold=True)
     distance_matrix = open_memmap(filename=distance_matrix_filename, mode="r", shape=(num_samples, num_samples))
 
     # 03. Perform binning using specified solver and metric
@@ -85,10 +90,16 @@ def perform_clustering(
     df_dist_bin.to_csv(dist_bin_csv, index=False)  # noqa
     click.secho(f"Dumped binning assignment CSV at {dist_bin_csv}", bold=True)
 
+    # 05. Creating bin files with contigs
+    click.secho(">> Writing binned FASTA files", fg="green", bold=True)
+    dump_bins(df_dist_bin, contig_fasta, bin_dump_dir)
+    click.secho(f"Dumped binned fasta to {bin_dump_dir}", bold=True)
+
     return dist_bin_csv
 
 
 def run_perform_clustering(
+    contig_fasta: Path,
     features_csv: Path,
     operating_dir: Path,
     parameters: SectionProxy,
@@ -97,7 +108,7 @@ def run_perform_clustering(
     """
     Perform binning and output the binning result.
 
-
+    :param contig_fasta: Contig file used for feature generation.
     :param features_csv: CSV containing the feature vectors and initial bins.
     :param operating_dir: Directory to write temp files to.
     :param parameters: Parameters INI section.
@@ -106,6 +117,7 @@ def run_perform_clustering(
     """
 
     return perform_clustering(
+        contig_fasta=contig_fasta,
         features_csv=features_csv,
         operating_dir=operating_dir,
         num_neighbors=int(parameters["AlgoNumNeighbors"]),
