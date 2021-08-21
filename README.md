@@ -43,33 +43,34 @@
 
 ## Development
 
-1. First install [Poetry](https://python-poetry.org/docs/).
+1. (Optional) Create a virtual env.
    ```bash
-   curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+   python -m venv .venv
+   source .venv/bin/activate
    ```
 2. Install the requirements of the project by running
     ```bash
-    poetry install
+    pip install -r requirements.txt
     ```
 3. Run the tool via:
     ```bash
-    poetry run python -m bin_x.bin_x
+    python -m bin_x.bin_x
     ```
 4. (Optional) Build the documentation via:
     ```bash
    cd docs
-    poetry run sphinx-autobuild . _build/html --port 8001
+    sphinx-autobuild . _build/html --port 8001
     ```
 
 Additionally, linting and type-checking are configured to this project. You may install the git-hooks for the formatters
 via,
 
  ```bash
-poetry run pre-commit install
+pre-commit install
  ```
 
 Type-checking can be done as:
 
  ```bash
-poetry run mypy .
+mypy .
  ```
