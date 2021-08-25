@@ -21,6 +21,18 @@ def create_distance_matrix(arr: np.ndarray, operating_dir: Path) -> Path:
     return filename
 
 
+def create_in_mem_distance_matrix(arr: np.ndarray) -> np.ndarray:
+    """
+    This calculates a distance matrix D of nxn size for given array of n elements.
+    The (i,j) element of matrix will have the euclidean distance from ith point to the jth point.
+    The created distance matrix would be in-memory.
+    """
+    start_time = time.time()
+    result = cdist(arr, arr, metric="euclidean")
+    print(f"Distance matrix calculated in {time.time() - start_time}s")
+    return result
+
+
 def find_nearest_from_cluster(c: int, curr_bins: np.ndarray, distance_row: np.ndarray, m: int) -> np.ndarray:
     """
     Find m closest points from the a cluster to a query sample point (denoted by its distance matrix row).

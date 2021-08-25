@@ -10,12 +10,7 @@ from bin_x.cli.utils import handle_error
 from bin_x.core.config import USER_CONFIG
 
 
-@click.group()
-def cli():
-    pass
-
-
-@cli.command()
+@click.command()
 @click.option("-i", "--contigs", required=True, help="The contig file to perform the binning operation.", type=Path)
 @click.option("-c", "--coverages", required=True, help="The tab-seperated file with abundance data.", type=Path)
 @click.option("-s", "--config", help="The configuration file path.", type=Path, default=Path("config/default.ini"))
@@ -37,4 +32,4 @@ def run(config: Path, contigs: Path, coverages: Path, out: Path, distance_matrix
 
 
 if __name__ == "__main__":
-    cli()
+    run()
