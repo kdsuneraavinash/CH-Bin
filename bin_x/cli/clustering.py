@@ -85,6 +85,7 @@ def perform_clustering(
 
     # Delete the distance matrix file (dont delete if using a cache)
     if not in_mem_dist_matrix and distance_matrix_cache is None:
+        assert distance_matrix_filename is not None
         os.remove(distance_matrix_filename)
     if np.any(convex_labels < 0):
         raise ValueError("There were some un-clustered points left... Aborting.")

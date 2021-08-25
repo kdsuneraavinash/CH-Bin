@@ -1,5 +1,6 @@
 from configparser import SectionProxy
 from pathlib import Path
+from typing import List
 
 import click
 import pandas as pd
@@ -18,7 +19,7 @@ def create_dataset(
     contig_fasta: Path,
     coverage_file: Path,
     operating_dir: Path,
-    kmer_k: int = 4,
+    kmer_ks: List[int],
     kmer_counter_tool: str = "kmer_counter",
     short_contig_threshold: int = 1000,
     coverage_thresh: float = 0.4,
@@ -31,7 +32,7 @@ def create_dataset(
     :param contig_fasta: Contig file to use for kmer counting.
     :param coverage_file: Coverage file containing abundance information.
     :param operating_dir: Directory to write temp files to.
-    :param kmer_k: k value of the kmers to count.
+    :param kmer_ks: list of k values of the kmers to count.
     :param kmer_counter_tool: kmer counter tool to use. (kmer_counter/seq2vec)
     :param short_contig_threshold: Threshold to filter the short contigs.
     :param coverage_thresh: Threshold for a hit to be considered for the seed frequency distribution.
@@ -78,7 +79,16 @@ def create_dataset(
 
     # 05. Calculate normalized kmer frequencies
     click.secho(f">> Calculating normalized kmer frequencies using {kmer_counter_tool}...", fg="green", bold=True)
-    df_kmer_freq = count_kmers(split_fasta, kmers_operation_dir, k=kmer_k, tool=kmer_counter_tool)
+    df_kmer_freq = None
+    for i, kmer_k in enumerate(kmer_ks):
+        df_curr = count_kmers(split_fasta, kmers_operation_dir, k=kmer_k, tool=kmer_counter_tool)
+        if df_kmer_freq is None:
+            df_kmer_freq = df_curr
+            continue
+        df_kmer_freq = df_kmer_freq.merge(
+            df_curr, left_on="CONTIG_NAME", right_on="CONTIG_NAME", suffixes=(f"x_{i}", f"y_{i}")
+        )
+    assert df_kmer_freq is not None, "No k-mer k values provided"
 
     # 06. Create a dataset with the initial cluster information
     click.secho(">> Creating a dataset with the initial cluster information...", fg="green", bold=True)
@@ -113,11 +123,12 @@ def run_create_dataset(contig_fasta: Path, coverage_file: Path, operating_dir: P
     :return: Path of merged dataset with initial bins marked.
     """
 
+    kmer_ks = list(map(int, parameters["KmerK"].split(",")))
     return create_dataset(
         contig_fasta=contig_fasta,
         coverage_file=coverage_file,
         operating_dir=operating_dir,
-        kmer_k=int(parameters["KmerK"]),
+        kmer_ks=kmer_ks,
         kmer_counter_tool=parameters["KmerCounterTool"],
         short_contig_threshold=int(parameters["ContigLengthFilterBp"]),
         coverage_thresh=float(parameters["ScmCoverageThreshold"]),
