@@ -6,8 +6,6 @@ from functools import wraps
 from pathlib import Path
 from typing import List, Optional, Union
 
-import pyprof2calltree
-
 
 def run_command(*command: Union[str, Path], env_paths: Optional[List[str]] = None) -> None:
     """
@@ -48,6 +46,8 @@ def profile(
                 if dump_stats:
                     profiler.dump_stats(profile_filename)
                 stats = pstats.Stats(profiler)
+                import pyprof2calltree
+
                 conv = pyprof2calltree.CalltreeConverter(stats)
                 with open(callgrind_filename, "w") as fd:
                     conv.output(fd)

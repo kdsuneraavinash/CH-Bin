@@ -4,6 +4,14 @@
 
 ### Requirements
 
+You will need python and build requirements (and optionally venv). In ubuntu 20.04, you can install them by,
+```bash
+sudo apt-get install build-essential
+sudo apt-get install python3 python-is-python3
+sudo apt-get install python3-dev
+sudo apt-get install python3.8-venv
+```
+
 1. Install [FragGeneScan](https://sourceforge.net/projects/fraggenescan).
     ```bash
     wget -O tools/FragGeneScan1.31.tar.gz https://sourceforge.net/projects/fraggenescan/files/FragGeneScan1.31.tar.gz
@@ -32,8 +40,10 @@
 
 ### Bin-X Installation
 
-1. Install using `setup.py`.
+1. Install using `setup.py`. (Recommended installing in a virtual environment)
     ```bash
+    python -m venv .venv
+    source .venv/bin/activate
     python setup.py install
     ```
 2. Run following command to run the tool.
@@ -43,20 +53,15 @@
 
 ## Development
 
-1. (Optional) Create a virtual env.
-    ```bash
-    python -m venv .venv
-    source .venv/bin/activate
-    ```
-2. Install the requirements of the project by running
+1. Install the requirements of the project by running
     ```bash
     pip install -r requirements.txt
     ```
-3. Run the tool via:
+2. Run the tool via:
     ```bash
     python -m bin_x.bin_x
     ```
-4. (Optional) Build the documentation via:
+3. (Optional) Build the documentation via:
     ```bash
     cd docs
     sphinx-autobuild . _build/html --port 8001
