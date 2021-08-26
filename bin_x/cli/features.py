@@ -1,13 +1,10 @@
 from configparser import SectionProxy
 from pathlib import Path
+from typing import List
 
 import click
-import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
 
-from bin_x.cli.utils import handle_error, reduce_dimensions_to_2d
-from bin_x.core.config import USER_CONFIG
 from bin_x.core.features.coverage import parse_coverages
 from bin_x.core.features.kmer_count import count_kmers
 from bin_x.core.features.preprocess import (
@@ -18,25 +15,11 @@ from bin_x.core.features.preprocess import (
 from bin_x.core.features.scm_gene import identify_marker_genomes
 
 
-def _visualize_initial_bins(df: pd.DataFrame, out_png: Path):
-    # Get only the required columns
-    df_kmer_counts = df.drop(["CONTIG_NAME", "PARENT_NAME", "CLUSTER"], axis=1)
-    df_2d = reduce_dimensions_to_2d(df_kmer_counts)
-
-    # Draw and save the un-clustered and clustered points
-    plt.figure(figsize=(15, 10))
-    sns.scatterplot(x="X", y="Y", data=df_2d[df.CLUSTER == -1], label="No Category", color="black", alpha=0.1)
-    for i in range(df.CLUSTER.max() + 1):
-        sns.scatterplot(x="X", y="Y", data=df_2d[df.CLUSTER == i], label=f"Cluster {i}")
-    plt.savefig(out_png)
-    plt.clf()
-
-
 def create_dataset(
     contig_fasta: Path,
     coverage_file: Path,
     operating_dir: Path,
-    kmer_k: int = 4,
+    kmer_ks: List[int],
     kmer_counter_tool: str = "kmer_counter",
     short_contig_threshold: int = 1000,
     coverage_thresh: float = 0.4,
@@ -49,7 +32,7 @@ def create_dataset(
     :param contig_fasta: Contig file to use for kmer counting.
     :param coverage_file: Coverage file containing abundance information.
     :param operating_dir: Directory to write temp files to.
-    :param kmer_k: k value of the kmers to count.
+    :param kmer_ks: list of k values of the kmers to count.
     :param kmer_counter_tool: kmer counter tool to use. (kmer_counter/seq2vec)
     :param short_contig_threshold: Threshold to filter the short contigs.
     :param coverage_thresh: Threshold for a hit to be considered for the seed frequency distribution.
@@ -59,10 +42,9 @@ def create_dataset(
     :return: Path of merged dataset with initial bins marked.
     """
 
-    filtered_fasta = operating_dir / "filtered.fasta"
-    split_fasta = operating_dir / "split.fasta"
-    output_dataset_csv = operating_dir / "dataset.csv"
-    plot_out_png = operating_dir / "plot.png"
+    filtered_fasta = operating_dir / "filtered-contigs.fasta"
+    split_fasta = operating_dir / "split-contigs.fasta"
+    output_dataset_csv = operating_dir / "features.csv"
     kmers_operation_dir = operating_dir / "kmers"
     scm_operation_dir = operating_dir / "scm"
     operating_dir.mkdir(parents=True, exist_ok=True)
@@ -70,17 +52,17 @@ def create_dataset(
     scm_operation_dir.mkdir(parents=True, exist_ok=True)
 
     # 01. Calculate coverages
-    click.secho("01. Calculating coverages...", bold=True)
+    click.secho(">> Calculating coverages...", fg="green", bold=True)
     df_coverages = parse_coverages(coverage_file)
 
     # 02. Remove short contigs
-    click.secho(f"02. Removing short contigs below {short_contig_threshold}bp...", bold=True)
+    click.secho(f">> Removing short contigs below {short_contig_threshold}bp...", fg="green", bold=True)
     contig_lengths = get_contig_lengths(contig_fasta)
     removed_contigs = filter_short_contigs(contig_fasta, filtered_fasta, threshold=short_contig_threshold)
-    click.secho(f"Removed {len(removed_contigs)} (of {len(contig_lengths)}) short contigs", fg="green", bold=True)
+    click.secho(f"Removed {len(removed_contigs)} (of {len(contig_lengths)}) short contigs", bold=True)
 
     # 03. Perform single-copy marker gene analysis
-    click.secho("03. Performing single-copy marker gene analysis...", bold=True)
+    click.secho(">> Performing single-copy marker gene analysis...", fg="green", bold=True)
     seed_clusters = identify_marker_genomes(
         filtered_fasta,
         contig_lengths,
@@ -88,19 +70,28 @@ def create_dataset(
         coverage_thresh=coverage_thresh,
         select_percentile=select_percentile,
     )
-    click.secho(f"Found {len(seed_clusters)} seeds", fg="green", bold=True)
+    click.secho(f"Found {len(seed_clusters)} seeds", bold=True)
 
     # 04. Identify seed contigs and split them
-    click.secho(f"04. Splitting all contigs to contain {seed_contig_split_len}bp...", bold=True)
+    click.secho(f">> Splitting all contigs to contain {seed_contig_split_len}bp...", fg="green", bold=True)
     sub_contigs = split_contigs(filtered_fasta, split_fasta, seed_clusters, split_len=seed_contig_split_len)
-    click.secho(f"Found {len(sub_contigs)} contigs after splitting", fg="green", bold=True)
+    click.secho(f"Found {len(sub_contigs)} contigs after splitting", bold=True)
 
     # 05. Calculate normalized kmer frequencies
-    click.secho(f"05. Calculating normalized kmer frequencies using {kmer_counter_tool}...", bold=True)
-    df_kmer_freq = count_kmers(split_fasta, kmers_operation_dir, k=kmer_k, tool=kmer_counter_tool)
+    click.secho(f">> Calculating normalized kmer frequencies using {kmer_counter_tool}...", fg="green", bold=True)
+    df_kmer_freq = None
+    for i, kmer_k in enumerate(kmer_ks):
+        df_curr = count_kmers(split_fasta, kmers_operation_dir, k=kmer_k, tool=kmer_counter_tool)
+        if df_kmer_freq is None:
+            df_kmer_freq = df_curr
+            continue
+        df_kmer_freq = df_kmer_freq.merge(
+            df_curr, left_on="CONTIG_NAME", right_on="CONTIG_NAME", suffixes=(f"x_{i}", f"y_{i}")
+        )
+    assert df_kmer_freq is not None, "No k-mer k values provided"
 
     # 06. Create a dataset with the initial cluster information
-    click.secho("06. Creating a dataset with the initial cluster information...", bold=True)
+    click.secho(">> Creating a dataset with the initial cluster information...", fg="green", bold=True)
     indexed_seed_clusters = zip(seed_clusters, range(len(seed_clusters)))
     df_seed_clusters = pd.DataFrame.from_records(indexed_seed_clusters, columns=["PARENT_NAME", "CLUSTER"])
     df_sub_contig = pd.DataFrame.from_records(list(sub_contigs.items()), columns=["CONTIG_NAME", "PARENT_NAME"])
@@ -109,18 +100,14 @@ def create_dataset(
     df_initial_clusters["CLUSTER"] = df_initial_clusters["CLUSTER"].astype(int)
 
     # 07. Merge all the features
-    click.secho("07. Merging all the features...", bold=True)
+    click.secho(">> Merging all the features...", fg="green", bold=True)
     df_merged = pd.merge(df_initial_clusters, df_kmer_freq)
     df_merged = pd.merge(df_merged, df_coverages, left_on="PARENT_NAME", right_on="CONTIG_NAME")
     df_merged = df_merged.rename(columns={"CONTIG_NAME_x": "CONTIG_NAME"})
     df_merged = df_merged.drop("CONTIG_NAME_y", axis=1)
     df_merged.to_csv(output_dataset_csv, index=False)
-    click.secho(f"Generated csv with shape {df_merged.shape}", fg="green", bold=True)
-    click.secho(f"Dumped features CSV at {output_dataset_csv}", fg="green", bold=True)
-
-    # 08. Visualize
-    click.secho("08. Drawing plots...", bold=True)
-    _visualize_initial_bins(df_merged, plot_out_png)
+    click.secho(f"Generated csv with shape {df_merged.shape}", bold=True)
+    click.secho(f"Dumped features CSV at {output_dataset_csv}", bold=True)
 
     return output_dataset_csv
 
@@ -136,32 +123,15 @@ def run_create_dataset(contig_fasta: Path, coverage_file: Path, operating_dir: P
     :return: Path of merged dataset with initial bins marked.
     """
 
+    kmer_ks = list(map(int, parameters["KmerK"].split(",")))
     return create_dataset(
         contig_fasta=contig_fasta,
         coverage_file=coverage_file,
         operating_dir=operating_dir,
-        kmer_k=int(parameters["KmerK"]),
+        kmer_ks=kmer_ks,
         kmer_counter_tool=parameters["KmerCounterTool"],
         short_contig_threshold=int(parameters["ContigLengthFilterBp"]),
         coverage_thresh=float(parameters["ScmCoverageThreshold"]),
         select_percentile=float(parameters["ScmSelectPercentile"]),
         seed_contig_split_len=int(parameters["SeedContigSplitLengthBp"]),
     )
-
-
-@click.command()
-@click.option("--config", prompt="Configuration file", help="The INI File to use for tool configuration.", type=Path)
-@click.option("--contigs", prompt="Contig file", help="The contig file to perform the binning operation.", type=Path)
-@click.option("--coverages", prompt="Coverage file", help="The tab-seperated file with abundance data.", type=Path)
-@click.option("--out", prompt="Output Directory", help="The output directory for the tool.", type=Path)
-def main(config: Path, contigs: Path, coverages: Path, out: Path):
-    try:
-        USER_CONFIG.read(config)
-        parameters = USER_CONFIG["PARAMETERS"]
-        run_create_dataset(contigs, coverages, out, parameters)
-    except Exception as e:
-        handle_error(e)
-
-
-if __name__ == "__main__":
-    main()
