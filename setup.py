@@ -38,7 +38,7 @@ setup(
     description="Taxonomy Independent Hybrid Metagenomic Binning tool utilizing Convex Hull distance metric",
     entry_points={
         "console_scripts": [
-            "bin_x=bin_x.bin_x:cli",
+            "bin_x=bin_x.bin_x:run",
         ],
     },
     install_requires=install_requires,
