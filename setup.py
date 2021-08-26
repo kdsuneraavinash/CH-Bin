@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup
 
-packages = ["bin_x", "bin_x.analysis", "bin_x.cli", "bin_x.core", "bin_x.core.clustering", "bin_x.core.features"]
+packages = ["bin_x", "bin_x.cli", "bin_x.core", "bin_x.core.clustering", "bin_x.core.features"]
 
 package_data = {"": ["*"]}
 
