@@ -8,12 +8,12 @@ import numpy as np
 import pandas as pd
 from numpy.lib.format import open_memmap  # noqa
 
-from bin_x.core.clustering.algorithm import fit_cluster
-from bin_x.core.clustering.distance_matrix import (
+from ch_bin.core.clustering.algorithm import fit_cluster
+from ch_bin.core.clustering.distance_matrix import (
     create_distance_matrix,
     create_in_mem_distance_matrix,
 )
-from bin_x.core.clustering.dump_bins import dump_bins
+from ch_bin.core.clustering.dump_bins import dump_bins
 
 
 def perform_clustering(

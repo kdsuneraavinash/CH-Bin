@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Union
 import pandas as pd
 from Bio import SeqIO
 
-from bin_x.core.config import USER_CONFIG
-from bin_x.core.utils import run_command
+from ch_bin.core.config import USER_CONFIG
+from ch_bin.core.utils import run_command
 
 
 def _kmer_counter_count_kmers(contig_fasta: Path, operating_dir: Path, k: int = 4) -> pd.DataFrame:

@@ -1,4 +1,4 @@
-Bin-X Documentation
+CH-Bin Documentation
 ===================
 
 .. toctree::
