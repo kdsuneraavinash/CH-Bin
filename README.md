@@ -1,4 +1,4 @@
-# Bin-X
+# CH-Bin
 
 ## Installation
 
@@ -38,7 +38,7 @@ sudo apt-get install python3.8-venv
     head ./tools/marker.hmm
     ```
 
-### Bin-X Installation
+### CH-Bin Installation
 
 1. Install using `setup.py`. (Recommended installing in a virtual environment)
     ```bash
@@ -48,7 +48,7 @@ sudo apt-get install python3.8-venv
     ```
 2. Run following command to run the tool.
     ```
-    bin_x --contig [CONTIG_FASTA] --coverages [COVERAGE_TSV] --out [OUT_DIR]
+    ch_bin --contigs [CONTIG_FASTA] --coverages [COVERAGE_TSV] --out [OUT_DIR]
     ```
 
 ## Development
@@ -59,7 +59,7 @@ sudo apt-get install python3.8-venv
     ```
 2. Run the tool via:
     ```bash
-    python -m bin_x.bin_x
+    python -m ch_bin.ch_bin
     ```
 3. (Optional) Build the documentation via:
     ```bash

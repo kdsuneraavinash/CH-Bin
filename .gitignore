@@ -116,3 +116,5 @@ errors.log
 
 callgrind.out
 **/*.out
+
+test/

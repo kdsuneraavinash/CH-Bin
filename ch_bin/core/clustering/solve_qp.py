@@ -12,7 +12,7 @@ import cvxopt
 import numpy as np
 import quadprog
 
-from bin_x.core.clustering.positive_def import nearest_positive_definite
+from ch_bin.core.clustering.positive_def import nearest_positive_definite
 
 
 def _quadprog_solve_qp(

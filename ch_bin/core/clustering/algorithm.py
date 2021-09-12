@@ -1,8 +1,8 @@
 import numpy as np
 from tqdm import tqdm
 
-from bin_x.core.clustering.distance_matrix import find_nearest_from_cluster
-from bin_x.core.clustering.hull_distance import calculate_distance
+from ch_bin.core.clustering.distance_matrix import find_nearest_from_cluster
+from ch_bin.core.clustering.hull_distance import calculate_distance
 
 
 def fit_cluster(

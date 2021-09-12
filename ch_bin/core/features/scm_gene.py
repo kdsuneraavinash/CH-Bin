@@ -11,8 +11,8 @@ from typing import Dict, List, Union
 from Bio import SearchIO
 from Bio.SearchIO import Hit
 
-from bin_x.core.config import USER_CONFIG
-from bin_x.core.utils import run_command
+from ch_bin.core.config import USER_CONFIG
+from ch_bin.core.utils import run_command
 
 
 def _run_frag_gene_scan(contig_file: Path, operating_dir: Path) -> Path:

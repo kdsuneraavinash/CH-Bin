@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Bin-X'
+project = 'CH-Bin'
 copyright = '2021, kdsuneraavinash'  # noqa
 author = 'kdsuneraavinash@gmail.com'
 

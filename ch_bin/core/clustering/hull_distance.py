@@ -1,6 +1,6 @@
 import numpy as np
 
-from bin_x.core.clustering.solve_qp import solve_qp
+from ch_bin.core.clustering.solve_qp import solve_qp
 
 
 def convex_hull_distance(query: np.ndarray, points: np.ndarray, solver: str = "quadprog") -> float:

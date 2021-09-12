@@ -4,10 +4,10 @@ from typing import Optional
 import click
 import numpy as np
 
-from bin_x.cli.clustering import run_perform_clustering
-from bin_x.cli.features import run_create_dataset
-from bin_x.cli.utils import handle_error
-from bin_x.core.config import USER_CONFIG
+from ch_bin.cli.clustering import run_perform_clustering
+from ch_bin.cli.features import run_create_dataset
+from ch_bin.cli.utils import handle_error
+from ch_bin.core.config import USER_CONFIG
 
 
 @click.command()

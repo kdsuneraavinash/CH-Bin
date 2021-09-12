@@ -8,7 +8,7 @@ some internal configuration, you might want to provide a custom configuration.
 
 ### Configuration file format
 
-Bin-X uses a customizable `ini` file format to store the configuration. The default configuration can be found
+CH-Bin uses a customizable `ini` file format to store the configuration. The default configuration can be found
 in `config/default.ini`.
 
 ```ini
@@ -63,11 +63,11 @@ In the parameters section, you can adjust the default tool settings. Following t
 
 ### Providing Configuration
 
-When running `bin_x` you can provide the custom configuration file via, `-s` or `--config` parameter.
+When running `ch_bin` you can provide the custom configuration file via, `-s` or `--config` parameter.
 
 ## Using seq2vec
 
-`seq2vec` is a fast kmer-counter tool. But due to installation issues, by default, bin-x uses kmer-counter. However,
+`seq2vec` is a fast kmer-counter tool. But due to installation issues, by default, CH-Bin uses kmer-counter. However,
 there will be a performance improvement if `seq2vec` is used.
 
 1. First install boost (1.72+)
@@ -91,7 +91,7 @@ there will be a performance improvement if `seq2vec` is used.
     ./tools/seq2vec/seq2vec --help
     ```
 
-4. Finally, set the configuration parameters as follows and provide the modified configuration file when running `bin_x`
+4. Finally, set the configuration parameters as follows and provide the modified configuration file when running `ch_bin`
    .
 
    ```ini

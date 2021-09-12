@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup
 
-packages = ["bin_x", "bin_x.cli", "bin_x.core", "bin_x.core.clustering", "bin_x.core.features"]
+packages = ["ch_bin", "ch_bin.cli", "ch_bin.core", "ch_bin.core.clustering", "ch_bin.core.features"]
 
 package_data = {"": ["*"]}
 
@@ -38,7 +38,7 @@ setup(
     description="Taxonomy Independent Hybrid Metagenomic Binning tool utilizing Convex Hull distance metric",
     entry_points={
         "console_scripts": [
-            "bin_x=bin_x.bin_x:run",
+            "ch_bin=ch_bin.ch_bin:run",
         ],
     },
     install_requires=install_requires,
@@ -46,9 +46,9 @@ setup(
     long_description=readme,
     packages=packages,
     package_data=package_data,
-    keywords="bin_x",
-    name="bin_x",
-    url="https://github.com/kdsuneraavinash/bin_x",
+    keywords="ch_bin",
+    name="ch_bin",
+    url="https://github.com/kdsuneraavinash/CH-Bin",
     version="0.0.3",
     zip_safe=False,
 )

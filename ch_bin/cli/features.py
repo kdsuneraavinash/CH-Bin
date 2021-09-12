@@ -5,14 +5,14 @@ from typing import List
 import click
 import pandas as pd
 
-from bin_x.core.features.coverage import parse_coverages
-from bin_x.core.features.kmer_count import count_kmers
-from bin_x.core.features.preprocess import (
+from ch_bin.core.features.coverage import parse_coverages
+from ch_bin.core.features.kmer_count import count_kmers
+from ch_bin.core.features.preprocess import (
     filter_short_contigs,
     get_contig_lengths,
     split_contigs,
 )
-from bin_x.core.features.scm_gene import identify_marker_genomes
+from ch_bin.core.features.scm_gene import identify_marker_genomes
 
 
 def create_dataset(

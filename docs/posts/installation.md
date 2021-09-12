@@ -28,9 +28,9 @@
    head ./tools/marker.hmm
    ```
 
-## Installing Bin-X
+## Installing CH-Bin
 
-After all the requirements are installed , install Bin-X using `setup.py`.
+After all the requirements are installed , install CH-Bin using `setup.py`.
 
 ```bash
 python setup.py install
