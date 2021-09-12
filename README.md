@@ -48,7 +48,7 @@ sudo apt-get install python3.8-venv
     ```
 2. Run following command to run the tool.
     ```
-    ch_bin --contig [CONTIG_FASTA] --coverages [COVERAGE_TSV] --out [OUT_DIR]
+    ch_bin --contigs [CONTIG_FASTA] --coverages [COVERAGE_TSV] --out [OUT_DIR]
     ```
 
 ## Development
