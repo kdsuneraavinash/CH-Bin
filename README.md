@@ -2,15 +2,25 @@
 
 ## Installation
 
-### Requirements
+First clone the CH-Bin repository to a local directory. Note that CH-Bin only supports linux.
+
+```bash
+git clone https://github.com/kdsuneraavinash/CH-Bin
+```
+
+### Dependencies
 
 You will need python and build requirements (and optionally venv). In ubuntu 20.04, you can install them by,
+
 ```bash
 sudo apt-get install build-essential
 sudo apt-get install python3 python-is-python3
 sudo apt-get install python3-dev
 sudo apt-get install python3.8-venv
 ```
+
+Additionally, [FragGeneScan](https://sourceforge.net/projects/fraggenescan), [HMMER](http://hmmer.org/)
+and [kmer-counter](https://github.com/alexpreynolds/kmer-counter) tools are required. If you have them already installed, you may provide their paths in the configuration. Otherwise, follow the below steps to install them manually. Following commands will install the required tools in the `tools` directory.
 
 1. Install [FragGeneScan](https://sourceforge.net/projects/fraggenescan).
     ```bash
@@ -32,24 +42,33 @@ sudo apt-get install python3.8-venv
     cd tools/kmer-counter/ && make && cd ../..
     ./tools/kmer-counter/kmer-counter --help
     ```
-4. Get marker-gene hmm file.
-    ```bash
-    wget -O tools/marker.hmm -nc https://raw.githubusercontent.com/sufforest/SolidBin/4c9b9ea7b8d8a0df1b772669872b69006c490e67/auxiliary/marker.hmm
-    head ./tools/marker.hmm
-    ```
+
+If you installed them in a different directory than `tools`, you need to update the configuration. Edit `config/default.ini` as follows, (If you followed the default installation commands provided above, you do not need to change the configuration.)
+
+```ini
+[COMMANDS]
+FragGeneScan = <FragGeneScan Path>
+Hmmer = <Hmmer Path>
+KMerCounter = <kmer-counter Path>
+```
 
 ### CH-Bin Installation
 
 1. Install using `setup.py`. (Recommended installing in a virtual environment)
     ```bash
-    python -m venv .venv
-    source .venv/bin/activate
+    python -m venv .venv        # Optional: creating venv
+    source .venv/bin/activate   # Optional: activating venv
     python setup.py install
     ```
-2. Run following command to run the tool.
-    ```
+2. Then run following command to run the tool.
+    ```bash
     ch_bin --contigs [CONTIG_FASTA] --coverages [COVERAGE_TSV] --out [OUT_DIR]
     ```
+
+For example, to bin the sample dataset, run the following command.
+ ```bash
+ ch_bin --contigs test_data/five-genomes-contigs.fasta --coverages test_data/five-genomes-abundance.abund --out out
+ ```
 
 ## Development
 
