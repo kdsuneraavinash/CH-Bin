@@ -70,6 +70,18 @@ For example, to bin the sample dataset, run the following command.
  ch_bin --contigs test_data/five-genomes-contigs.fasta --coverages test_data/five-genomes-abundance.abund --out out
  ```
 
+This will create the `out` directory with the binning assignments. The final binning assignments will be in `out/clustering/binning-assignment.csv` file. This will be a comma-separated file in the following format. (First column being the contig name and second being the assigned bin index)
+
+```csv
+CONTIG_NAME,BIN
+NODE_100_length_59166_cov_34.037370,2
+NODE_101_length_58711_cov_33.859759,2
+NODE_102_length_56779_cov_94.096062,1
+NODE_103_length_53962_cov_21.469587,3
+```
+
+Furthermore, the FASTA files of the bins will also be dumped into `out/clustering/bins` directory.
+
 ## Required File Formats
 
 ### Contig File
