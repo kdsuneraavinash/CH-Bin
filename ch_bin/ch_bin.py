@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional
 
 import click
 import numpy as np
@@ -15,8 +14,7 @@ from ch_bin.core.config import USER_CONFIG
 @click.option("-c", "--coverages", required=True, help="The tab-seperated file with abundance data.", type=Path)
 @click.option("-s", "--config", help="The configuration file path.", type=Path, default=Path("config/default.ini"))
 @click.option("-o", "--out", help="The output directory for the tool.", type=Path, default=Path("out"))
-@click.option("-d", "--distance_matrix_cache", help="The distance matrix file.", type=Path)
-def run(config: Path, contigs: Path, coverages: Path, out: Path, distance_matrix_cache: Optional[Path]):
+def run(config: Path, contigs: Path, coverages: Path, out: Path):
     try:
         np.random.seed(0)
         USER_CONFIG.read(config)
@@ -25,7 +23,7 @@ def run(config: Path, contigs: Path, coverages: Path, out: Path, distance_matrix
         clustering_out = out / "clustering"
 
         features_csv = run_create_dataset(contigs, coverages, features_out, parameters)
-        dist_bin_csv = run_perform_clustering(contigs, features_csv, clustering_out, parameters, distance_matrix_cache)
+        dist_bin_csv = run_perform_clustering(contigs, features_csv, clustering_out, parameters, None)
         click.secho(f"Final Binning CSV is at {dist_bin_csv}", bold=True)
     except Exception as e:
         handle_error(e)
