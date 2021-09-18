@@ -6,6 +6,7 @@ First clone the CH-Bin repository to a local directory. Note that CH-Bin only su
 
 ```bash
 git clone https://github.com/kdsuneraavinash/CH-Bin
+cd CH-Bin
 ```
 
 ### Dependencies
