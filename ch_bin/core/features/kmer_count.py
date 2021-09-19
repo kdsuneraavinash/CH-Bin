@@ -73,11 +73,14 @@ def _seq2vec_count_kmers(contig_fasta: Path, operating_dir: Path, k: int = 4) ->
     kmer_command_dir = USER_CONFIG["COMMANDS"]["Seq2Vec"]
     kmer_count_txt = operating_dir / "count.txt"
     kmer_count_csv = operating_dir / "normalized_kmer.csv"
-    arguments: List[Union[str, Path]] = ["seq2vec"]
-    arguments.extend(["-f", contig_fasta])
-    arguments.extend(["-o", kmer_count_txt])
-    arguments.extend(["-k", str(k)])
-    run_command(*arguments, env_paths=[kmer_command_dir])
+
+    # Run the tool if not previously run
+    if not kmer_count_csv.exists():
+        arguments: List[Union[str, Path]] = ["seq2vec"]
+        arguments.extend(["-f", contig_fasta])
+        arguments.extend(["-o", kmer_count_txt])
+        arguments.extend(["-k", str(k)])
+        run_command(*arguments, env_paths=[kmer_command_dir])
 
     contig_names = []
     with open(contig_fasta, mode="r") as fr:

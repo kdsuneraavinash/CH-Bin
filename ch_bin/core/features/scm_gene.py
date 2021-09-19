@@ -27,15 +27,20 @@ def _run_frag_gene_scan(contig_file: Path, operating_dir: Path) -> Path:
     fgs_command_dir = USER_CONFIG["COMMANDS"]["FragGeneScan"]
     fgs_dir = operating_dir / "frag-gene-scan"
     fgs_dir.mkdir(parents=True, exist_ok=True)
-    fgs_dir_prefix = fgs_dir / "frags"
-    arguments = ["run_FragGeneScan.pl"]
-    arguments.extend([f"-genome={contig_file}"])
-    arguments.extend([f"-out={fgs_dir_prefix}"])
-    arguments.extend(["-complete=0"])
-    arguments.extend(["-train=complete"])
-    arguments.extend(["-thread=10"])
-    run_command(*arguments, env_paths=[fgs_command_dir])
-    return fgs_dir / "frags.faa"
+    faa_file = fgs_dir / "frags.faa"
+
+    # Run the tool if not previously run
+    if not faa_file.exists():
+        fgs_dir_prefix = fgs_dir / "frags"
+        arguments = ["run_FragGeneScan.pl"]
+        arguments.extend([f"-genome={contig_file}"])
+        arguments.extend([f"-out={fgs_dir_prefix}"])
+        arguments.extend(["-complete=0"])
+        arguments.extend(["-train=complete"])
+        arguments.extend(["-thread=10"])
+        run_command(*arguments, env_paths=[fgs_command_dir])
+
+    return faa_file
 
 
 def _run_hmm_search(fgs_file: Path, operating_dir: Path) -> Path:
@@ -54,15 +59,19 @@ def _run_hmm_search(fgs_file: Path, operating_dir: Path) -> Path:
     per_seq_hits_file = hmm_dir / "per-sequence-hits.hmmout"
     hmm_stdout = hmm_dir / "stdout.txt"
     hmm_dir.mkdir(parents=True, exist_ok=True)
-    arguments: List[Union[str, Path]] = ["hmmsearch"]
-    arguments.extend(["-o", hmm_stdout])
-    arguments.extend(["--domtblout", per_domain_hits_file])
-    arguments.extend(["--tblout", per_seq_hits_file])
-    arguments.extend(["--cpu", "10"])
-    arguments.extend(["--cut_tc"])
-    arguments.extend([markers_hmm_resource])
-    arguments.extend([fgs_file])
-    run_command(*arguments, env_paths=[hmmer_command_dir])
+
+    # Run the tool if not previously run
+    if not per_domain_hits_file.exists():
+        arguments: List[Union[str, Path]] = ["hmmsearch"]
+        arguments.extend(["-o", hmm_stdout])
+        arguments.extend(["--domtblout", per_domain_hits_file])
+        arguments.extend(["--tblout", per_seq_hits_file])
+        arguments.extend(["--cpu", "10"])
+        arguments.extend(["--cut_tc"])
+        arguments.extend([markers_hmm_resource])
+        arguments.extend([fgs_file])
+        run_command(*arguments, env_paths=[hmmer_command_dir])
+
     return per_domain_hits_file
 
 
