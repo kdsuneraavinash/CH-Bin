@@ -18,10 +18,11 @@ sudo apt-get install build-essential
 sudo apt-get install python3 python-is-python3
 sudo apt-get install python3-dev
 sudo apt-get install python3.8-venv
+sudo apt-get install libboost-all-dev
 ```
 
 Additionally, [FragGeneScan](https://sourceforge.net/projects/fraggenescan), [HMMER](http://hmmer.org/)
-and [kmer-counter](https://github.com/alexpreynolds/kmer-counter) tools are required. If you have them already installed, you may provide their paths in the configuration. Otherwise, follow the below steps to install them manually. Following commands will install the required tools in the `tools` directory.
+and [seq2vec](https://github.com/anuradhawick/seq2vec) tools are required. If you have them already installed, you may provide their paths in the configuration. Otherwise, follow the below steps to install them manually. Following commands will install the required tools in the `tools` directory.
 
 1. Install [FragGeneScan](https://sourceforge.net/projects/fraggenescan).
     ```bash
@@ -37,11 +38,11 @@ and [kmer-counter](https://github.com/alexpreynolds/kmer-counter) tools are requ
     cd tools/hmmer-3.3.2 && ./configure && make && cd ../..
     ./tools/hmmer-3.3.2/src/hmmalign -h
     ```
-3. Install [kmer-counter](https://github.com/alexpreynolds/kmer-counter).
+3. Install [seq2vec](https://github.com/anuradhawick/seq2vec).
     ```bash
-    git clone https://github.com/alexpreynolds/kmer-counter tools/kmer-counter
-    cd tools/kmer-counter/ && make && cd ../..
-    ./tools/kmer-counter/kmer-counter --help
+    git clone https://github.com/anuradhawick/seq2vec.git tools/seq2vec tools
+    cd tools/seq2vec/ && mkdir build && cmake . && make -j8 && cd ../..
+    ./tools/seq2vec/seq2vec --help
     ```
 
 If you installed them in a different directory than `tools`, you need to update the configuration. Edit `config/default.ini` as follows, (If you followed the default installation commands provided above, you do not need to change the configuration.)
@@ -50,7 +51,7 @@ If you installed them in a different directory than `tools`, you need to update 
 [COMMANDS]
 FragGeneScan = <FragGeneScan Path>
 Hmmer = <Hmmer Path>
-KMerCounter = <kmer-counter Path>
+Seq2Vec = <Seq2Vec Path>
 ```
 
 ### CH-Bin Installation
@@ -126,7 +127,6 @@ in `config/default.ini`.
 [COMMANDS]
 FragGeneScan = DIR OF run_FragGeneScan.pl
 Hmmer = DIR OF Hmmer
-KMerCounter = DIR OF kmer-counter
 Seq2Vec = DIR OF seq2vec
 
 [RESOURCES]
@@ -134,7 +134,6 @@ MarkersHmm = PATH OF marker.hmm
 
 [PARAMETERS]
 KmerK = INTEGER
-KmerCounterTool = EITHER kmer_counter OR seq2vec
 ContigLengthFilterBp = INTEGER
 ScmCoverageThreshold = FLOAT BETWEEN 0 AND 1
 ScmSelectPercentile = FLOAT BETWEEN 0 AND 1
@@ -163,7 +162,6 @@ In the parameters section, you can adjust the default tool settings. Following t
 | Parameter               | Description                                                  |
 | ----------------------- | ------------------------------------------------------------ |
 | KmerK                   | K value of the kmers to count.                               |
-| KmerCounterTool         | Kmer counter tool to use. (kmer_counter/seq2vec)             |
 | ContigLengthFilterBp    | Threshold to filter the short contigs.                       |
 | ScmCoverageThreshold    | Threshold for a hit to be considered for the seed frequency distribution. |
 | ScmSelectPercentile     | Percentile to use for selecting the number of seeds. For example, 0.5 will take the median number of seeds. |
@@ -178,42 +176,6 @@ In the parameters section, you can adjust the default tool settings. Following t
 
 When running `ch_bin` you can provide the custom configuration file via, `-s` or `--config` parameter.
 
-#### Using seq2vec
-
-`seq2vec` is a fast kmer-counter tool. But due to difficulty in installing, by default, CH-Bin uses kmer-counter. However, there will be a performance improvement if `seq2vec` is used.
-
-1. First install boost (1.72+)
-    ```bash
-    sudo apt-get install libboost-all-dev
-    ```
-
-2. In case that the version installed by above command is less than 1.72, you may want
-   to [install from source](https://www.boost.org/doc/libs/1_76_0/more/getting_started/unix-variants.html#id20).
-    ```bash
-    sudo apt-get install build-essential g++ python-dev autotools-dev libicu-dev libbz2-dev
-    wget -O tools/boost_1_76_0.tar.gz https://sourceforge.net/projects/boost/files/boost/1.76.0/boost_1_76_0.tar.gz/download
-    cd tools && tar xzvf boost_1_76_0.tar.gz
-    cd tools/boost_1_76_0/ && ./bootstrap.sh --prefix=/usr/ && chmod +x b2 && ./b2 && sudo ./b2 install && cd ../..
-    ```
-
-3. Then download and build the `seq2vec` project.
-    ```bash
-    git clone https://github.com/anuradhawick/seq2vec.git tools/seq2vec
-    cd tools/seq2vec/ && mkdir build && cmake . && make -j8 && cd ../..
-    ./tools/seq2vec/seq2vec --help
-    ```
-
-4. Finally, set the configuration parameters as follows and provide the modified configuration file when running `ch_bin`
-   .
-
-   ```ini
-   [COMMANDS]
-   Seq2Vec = tools/seq2vec/seq2vec
-
-   [PARAMETERS]
-   KmerCounterTool = seq2vec
-   ```
-
 ## Development
 
 1. Install the requirements of the project by running
@@ -223,11 +185,6 @@ When running `ch_bin` you can provide the custom configuration file via, `-s` or
 2. Run the tool via:
     ```bash
     python -m ch_bin.ch_bin
-    ```
-3. (Optional) Build the documentation via:
-    ```bash
-    cd docs
-    sphinx-autobuild . _build/html --port 8001
     ```
 
 Additionally, linting and type-checking are configured to this project. You may install the git-hooks for the formatters
