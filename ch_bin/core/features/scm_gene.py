@@ -43,6 +43,13 @@ def _run_frag_gene_scan(contig_file: Path, operating_dir: Path) -> Path:
     return faa_file
 
 
+def _extract_contig_id(hit: Hit):
+    """Extract the contig id from a hit"""
+    split_hit_id = str(hit.id).split("_")
+    split_contig_id = split_hit_id[:-3]
+    return "_".join(split_contig_id)
+
+
 def _run_hmm_search(fgs_file: Path, operating_dir: Path) -> Path:
     """
     Runs hmmsearch command.
@@ -92,15 +99,16 @@ def _parse_hmm_hits_file(per_domain_hits_file: Path, coverage_thresh: float = 0.
     seed_counts: Dict[int, List[List[Hit]]] = defaultdict(list)
     with open(per_domain_hits_file, "r") as fr:
         for query_result in SearchIO.parse(fr, "hmmsearch3-domtab"):
-            filtered_hits: List[Hit] = []
+            filtered_hits: Dict[str, Hit] = defaultdict(Hit)
             for hit in query_result:
                 max_hit_span = max(hsp.hit_span for hsp in hit.hsps)
                 hit_coverage = max_hit_span / query_result.seq_len
                 if hit_coverage >= coverage_thresh:
-                    filtered_hits.append(hit)
+                    hit_contig_id = _extract_contig_id(hit)
+                    filtered_hits[hit_contig_id] = hit
             n_filtered_hits = len(filtered_hits)
             if n_filtered_hits > 0:
-                seed_counts[n_filtered_hits].append(filtered_hits)
+                seed_counts[n_filtered_hits].append(list(filtered_hits.values()))
     return seed_counts
 
 
@@ -135,18 +143,12 @@ def _best_candidate(candidates: List[List[Hit]], contig_lengths: Dict[str, int])
     :return: Id list of all the contigs inside the best hit.
     """
 
-    def extract_contig_id(hit: Hit):
-        """Extract the contig id from a hit"""
-        split_hit_id = str(hit.id).split("_")
-        split_contig_id = split_hit_id[:-3]
-        return "_".join(split_contig_id)
-
     def candidate_score(candidate: List[Hit]):
         """Scores a candidate hit list to be the length of minimum contig"""
-        return min(contig_lengths[extract_contig_id(hit)] for hit in candidate)
+        return min(contig_lengths[_extract_contig_id(hit)] for hit in candidate)
 
     hits = max(candidates, key=candidate_score)
-    return list(map(extract_contig_id, hits))
+    return list(map(_extract_contig_id, hits))
 
 
 def identify_marker_genomes(
