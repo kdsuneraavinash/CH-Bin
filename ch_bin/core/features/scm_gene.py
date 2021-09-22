@@ -191,7 +191,8 @@ def identify_marker_genomes(
     # 02. Then parse hmm output domain hits file to find possible seeds numbers
     seed_hits = _parse_hmm_hits_file(per_domain_hits_file, coverage_thresh=coverage_thresh)
 
-    # TODO raise error "no seeds found" if seed hit empty
+    if not seed_hits:
+        raise Exception("no HMMER seed hits found")
 
     # 03. Find the number of seeds using the defined percentile
     max_number_of_seeds = max(seed_hits.keys())
