@@ -1,9 +1,12 @@
+import logging
 import time
 from pathlib import Path
 
 import numpy as np
 from numpy.lib.format import open_memmap
 from scipy.spatial.distance import cdist
+
+logger = logging.getLogger(__name__)
 
 
 def create_distance_matrix(arr: np.ndarray, operating_dir: Path) -> Path:
@@ -14,10 +17,12 @@ def create_distance_matrix(arr: np.ndarray, operating_dir: Path) -> Path:
     n = len(arr)
     start_time = time.time()
     filename = operating_dir / "distance_matrix.npy"
+    logger.debug("Started creating distance matrix at %s.", filename)
     result = open_memmap(filename=filename, mode="w+", shape=(n, n))
     cdist(arr, arr, metric="euclidean", out=result)
     result.flush()
-    print(f"Distance matrix calculated in {time.time() - start_time}s")
+    logger.debug("Ended creating distance matrix. Shape is %s", result.shape)
+    logger.debug("Distance matrix calculated in %s s.", time.time() - start_time)
     return filename
 
 
@@ -28,8 +33,10 @@ def create_in_mem_distance_matrix(arr: np.ndarray) -> np.ndarray:
     The created distance matrix would be in-memory.
     """
     start_time = time.time()
+    logger.debug("Started creating distance matrix in-memory.")
     result = cdist(arr, arr, metric="euclidean")
-    print(f"Distance matrix calculated in {time.time() - start_time}s")
+    logger.debug("Ended creating distance matrix. Shape is %s", result.shape)
+    logger.debug("Distance matrix calculated in %s s.", time.time() - start_time)
     return result
 
 
