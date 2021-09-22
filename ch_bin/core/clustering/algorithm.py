@@ -1,8 +1,12 @@
+import logging
+
 import numpy as np
 from tqdm import tqdm
 
 from ch_bin.core.clustering.distance_matrix import find_nearest_from_cluster
 from ch_bin.core.clustering.hull_distance import calculate_distance
+
+logger = logging.getLogger(__name__)
 
 
 def fit_cluster(
@@ -33,6 +37,7 @@ def fit_cluster(
     curr_bins: np.ndarray = initial_bins.copy()
     points_to_assign: np.ndarray = np.where(curr_bins == -1)[0]
     num_points_to_assign = len(points_to_assign)
+    logger.debug("Assigning %s points.", num_points_to_assign)
 
     distance_row = np.empty(shape=(len(samples),))
     for i_iter in range(max_iterations):
@@ -57,13 +62,15 @@ def fit_cluster(
         # If the assignments did not change, break
         diff_bins = initial_bins != curr_bins
         if not np.any(diff_bins):
-            print("No changes done with previous iteration... Stopping at iteration", i_iter + 1)
+            logger.info("Iteration %s: No changes with previous iteration... Stopping...", i_iter + 1)
             break
-        print(f"Points changing cluster : {np.average(diff_bins) * 100}% ({sum(diff_bins)} points)")
+        change_avg = np.average(diff_bins)
+        change_count = sum(diff_bins)
+        logger.info("Iteration %s: Points changed clusters. avg=%s, count=%s", i_iter + 1, change_avg, change_count)
 
         initial_bins = curr_bins
         curr_bins = curr_bins.copy()
 
     else:
-        print("Exit due to max iteration limit")
+        logger.info("Exit due to max iteration limit.")
     return curr_bins

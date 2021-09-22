@@ -4,12 +4,14 @@ that are used for preprocessing steps that are not
 primary sections of the flow.
 Example,contig splitting, filtering short contigs.
 """
-
+import logging
 from pathlib import Path
 from typing import Any, Dict, Generator, List
 
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
+
+logger = logging.getLogger(__name__)
 
 
 def _generate_split_string(string: str, split_len: int = 10000) -> Generator[str, Any, None]:
