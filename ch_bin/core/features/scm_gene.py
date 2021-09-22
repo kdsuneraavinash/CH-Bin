@@ -119,8 +119,12 @@ def _parse_hmm_hits_file(per_domain_hits_file: Path, coverage_thresh: float = 0.
             n_filtered_hits = len(filtered_hits)
             if n_filtered_hits > 0:
                 seed_counts[n_filtered_hits].append(list(filtered_hits.values()))
-            logger.debug("Single Copy Marker Gene: %s | No. of Filtered Hits: %d | Filtered Hits: [ %s ]",
-                         query_result.id, n_filtered_hits, ",".join(filtered_hits))
+            logger.debug(
+                "Single Copy Marker Gene: %s | No. of Filtered Hits: %d | Filtered Hits: [ %s ]",
+                query_result.id,
+                n_filtered_hits,
+                ",".join(filtered_hits),
+            )
     return seed_counts
 
 
