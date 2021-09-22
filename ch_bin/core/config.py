@@ -31,6 +31,8 @@ class CHBinLogHandler(logging.FileHandler):
     def emit(self, record: logging.LogRecord):
         if record.levelno == logging.ERROR:
             click.secho(f"Error: {record.getMessage()}", fg="red", bold=True)
+        elif record.levelno == logging.WARNING:
+            click.secho(f"Warning: {record.getMessage()}", fg="yellow", bold=True)
         elif record.levelno == logging.INFO:
             message = record.getMessage()
             if message.startswith(">>"):
