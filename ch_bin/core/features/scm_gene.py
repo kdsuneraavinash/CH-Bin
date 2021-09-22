@@ -1,10 +1,8 @@
 """
 Module containing all the utilities and functions
 that are used for single-copy marker gene analysis.
-
-TODO: Add logging.
 """
-
+import logging
 import math
 from collections import defaultdict
 from pathlib import Path
@@ -16,6 +14,8 @@ from Bio.SearchIO import Hit
 from ch_bin.core.config import USER_CONFIG
 from ch_bin.core.utils import run_command
 
+logger = logging.getLogger(__name__)
+
 
 def _run_frag_gene_scan(contig_file: Path, operating_dir: Path) -> Path:
     """
@@ -26,6 +26,9 @@ def _run_frag_gene_scan(contig_file: Path, operating_dir: Path) -> Path:
     :param operating_dir: Directory to write temp files to.
     :return: The Frag Gene Scan output FAA file path.
     """
+
+    logger.debug("Running FragGeneScan for predicting Genes from Contigs.")
+
     fgs_command_dir = USER_CONFIG["COMMANDS"]["FragGeneScan"]
     fgs_dir = operating_dir / "frag-gene-scan"
     fgs_dir.mkdir(parents=True, exist_ok=True)
@@ -61,6 +64,9 @@ def _run_hmm_search(fgs_file: Path, operating_dir: Path) -> Path:
     :param operating_dir: Directory to write temp files to.
     :return: per domain hits output file path.
     """
+
+    logger.debug("Running HMMER3 for scanning predicted Genes for Single Copy Marker Genes.")
+
     hmmer_command_dir = USER_CONFIG["COMMANDS"]["Hmmer"]
     markers_hmm_resource = USER_CONFIG["RESOURCES"]["MarkersHmm"]
     hmm_dir = operating_dir / "hmmer"
@@ -98,6 +104,8 @@ def _parse_hmm_hits_file(per_domain_hits_file: Path, coverage_thresh: float = 0.
             eg: { 2: [[Hit1, Hit2], [Hit3, Hit4], [Hit3, Hit4]], 3: [...] }
             Here the shown combinations are the witnesses to the number of bins being 2.
     """
+    logger.debug("Searching hammer hits file for hits with coverage greater than coverage threshold.")
+
     seed_counts: Dict[int, List[List[Hit]]] = defaultdict(list)
     with open(per_domain_hits_file, "r") as fr:
         for query_result in SearchIO.parse(fr, "hmmsearch3-domtab"):
@@ -111,6 +119,9 @@ def _parse_hmm_hits_file(per_domain_hits_file: Path, coverage_thresh: float = 0.
             n_filtered_hits = len(filtered_hits)
             if n_filtered_hits > 0:
                 seed_counts[n_filtered_hits].append(list(filtered_hits.values()))
+            logger.debug("Single Copy Marker Gene: %s", query_result.id)
+            logger.debug("\tNo. of Filtered Hits: %d", n_filtered_hits)
+            logger.debug("\tFiltered Hits: [ %s ]", ",".join(filtered_hits))
     return seed_counts
 
 
@@ -180,17 +191,22 @@ def identify_marker_genomes(
     # 02. Then parse hmm output domain hits file to find possible seeds numbers
     seed_hits = _parse_hmm_hits_file(per_domain_hits_file, coverage_thresh=coverage_thresh)
 
+    # TODO raise error "no seeds found" if seed hit empty
+
     # 03. Find the number of seeds using the defined percentile
     max_number_of_seeds = max(seed_hits.keys())
     seed_hits_frequencies = [len(seed_hits[i]) for i in range(max_number_of_seeds + 1)]
     number_of_seeds = _percentile_index(seed_hits_frequencies, select_percentile=select_percentile)
+    logger.debug("Calculated the number of Seed Contigs (Bins) : %d", number_of_seeds)
 
     # 04. Select some sample contigs to match the number of seeds
     witness_candidates = seed_hits[number_of_seeds]
     best_contig_ids = _best_candidate(witness_candidates, contig_lengths)
+    logger.debug("Identified the seed contigs : [ %s ]", ",".join(best_contig_ids))
 
     # 05. Output the found result
     with open(operating_dir / "seeds.txt", "w") as fw:
         fw.write("\n".join(best_contig_ids))
+    logger.debug("List of seed contigs written to %s", operating_dir / "seeds.txt")
 
     return best_contig_ids
