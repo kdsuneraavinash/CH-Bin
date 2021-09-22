@@ -27,7 +27,7 @@ def _run_frag_gene_scan(contig_file: Path, operating_dir: Path) -> Path:
     :return: The Frag Gene Scan output FAA file path.
     """
 
-    logger.debug("Running FragGeneScan for predicting Genes from Contigs.")
+    logger.debug("Running FragGeneScan for predicting genes from contigs.")
 
     fgs_command_dir = USER_CONFIG["COMMANDS"]["FragGeneScan"]
     fgs_dir = operating_dir / "frag-gene-scan"
@@ -65,7 +65,7 @@ def _run_hmm_search(fgs_file: Path, operating_dir: Path) -> Path:
     :return: per domain hits output file path.
     """
 
-    logger.debug("Running HMMER3 for scanning predicted Genes for Single Copy Marker Genes.")
+    logger.debug("Running HMMER3 for scanning predicted genes for single copy marker genes.")
 
     hmmer_command_dir = USER_CONFIG["COMMANDS"]["Hmmer"]
     markers_hmm_resource = USER_CONFIG["RESOURCES"]["MarkersHmm"]
@@ -119,9 +119,8 @@ def _parse_hmm_hits_file(per_domain_hits_file: Path, coverage_thresh: float = 0.
             n_filtered_hits = len(filtered_hits)
             if n_filtered_hits > 0:
                 seed_counts[n_filtered_hits].append(list(filtered_hits.values()))
-            logger.debug("Single Copy Marker Gene: %s", query_result.id)
-            logger.debug("\tNo. of Filtered Hits: %d", n_filtered_hits)
-            logger.debug("\tFiltered Hits: [ %s ]", ",".join(filtered_hits))
+            logger.debug("Single Copy Marker Gene: %s | No. of Filtered Hits: %d | Filtered Hits: [ %s ]",
+                         query_result.id, n_filtered_hits, ",".join(filtered_hits))
     return seed_counts
 
 
@@ -192,7 +191,7 @@ def identify_marker_genomes(
     seed_hits = _parse_hmm_hits_file(per_domain_hits_file, coverage_thresh=coverage_thresh)
 
     if not seed_hits:
-        raise Exception("no HMMER seed hits found")
+        raise Exception("No HMMER seed hits found")
 
     # 03. Find the number of seeds using the defined percentile
     max_number_of_seeds = max(seed_hits.keys())
@@ -203,7 +202,7 @@ def identify_marker_genomes(
     # 04. Select some sample contigs to match the number of seeds
     witness_candidates = seed_hits[number_of_seeds]
     best_contig_ids = _best_candidate(witness_candidates, contig_lengths)
-    logger.debug("Identified the seed contigs : [ %s ]", ",".join(best_contig_ids))
+    logger.debug("Identified the seed contigs : %s", best_contig_ids)
 
     # 05. Output the found result
     with open(operating_dir / "seeds.txt", "w") as fw:
