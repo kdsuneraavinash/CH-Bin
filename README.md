@@ -40,7 +40,7 @@ and [seq2vec](https://github.com/anuradhawick/seq2vec) tools are required. If yo
     ```
 3. Install [seq2vec](https://github.com/anuradhawick/seq2vec).
     ```bash
-    git clone https://github.com/anuradhawick/seq2vec.git tools/seq2vec tools
+    git clone https://github.com/anuradhawick/seq2vec.git tools/seq2vec
     cd tools/seq2vec/ && mkdir build && cmake . && make -j8 && cd ../..
     ./tools/seq2vec/seq2vec --help
     ```
