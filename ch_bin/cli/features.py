@@ -1,8 +1,8 @@
+import logging
 from configparser import SectionProxy
 from pathlib import Path
 from typing import List
 
-import click
 import pandas as pd
 
 from ch_bin.core.features.coverage import parse_coverages
@@ -13,6 +13,8 @@ from ch_bin.core.features.preprocess import (
     split_contigs,
 )
 from ch_bin.core.features.scm_gene import identify_marker_genomes
+
+logger = logging.getLogger(__name__)
 
 
 def create_dataset(
@@ -52,17 +54,17 @@ def create_dataset(
     scm_operation_dir.mkdir(parents=True, exist_ok=True)
 
     # 01. Calculate coverages
-    click.secho(">> Calculating coverages...", fg="green", bold=True)
+    logger.info(">> Calculating coverages...")
     df_coverages = parse_coverages(coverage_file)
 
     # 02. Remove short contigs
-    click.secho(f">> Removing short contigs below {short_contig_threshold}bp...", fg="green", bold=True)
+    logger.info(">> Removing contigs shorter than %s bp.", short_contig_threshold)
     contig_lengths = get_contig_lengths(contig_fasta)
     removed_contigs = filter_short_contigs(contig_fasta, filtered_fasta, threshold=short_contig_threshold)
-    click.secho(f"Removed {len(removed_contigs)} (of {len(contig_lengths)}) short contigs", bold=True)
+    logger.info("Removed %s (of %s) short contigs.", len(removed_contigs), len(contig_lengths))
 
     # 03. Perform single-copy marker gene analysis
-    click.secho(">> Performing single-copy marker gene analysis...", fg="green", bold=True)
+    logger.info(">> Performing single-copy marker gene analysis...")
     seed_clusters = identify_marker_genomes(
         filtered_fasta,
         contig_lengths,
@@ -70,15 +72,15 @@ def create_dataset(
         coverage_thresh=coverage_thresh,
         select_percentile=select_percentile,
     )
-    click.secho(f"Found {len(seed_clusters)} seeds", bold=True)
+    logger.info("Found %s seeds.", len(seed_clusters))
 
     # 04. Identify seed contigs and split them
-    click.secho(f">> Splitting all contigs to contain {seed_contig_split_len}bp...", fg="green", bold=True)
+    logger.info(">> Splitting all contigs to contain %s bp.", seed_contig_split_len)
     sub_contigs = split_contigs(filtered_fasta, split_fasta, seed_clusters, split_len=seed_contig_split_len)
-    click.secho(f"Found {len(sub_contigs)} contigs after splitting", bold=True)
+    logger.info("Found %s contigs after splitting.", len(sub_contigs))
 
     # 05. Calculate normalized kmer frequencies
-    click.secho(f">> Calculating normalized kmer frequencies using {kmer_counter_tool}...", fg="green", bold=True)
+    logger.info(">> Calculating normalized kmer frequencies using %s ...", kmer_counter_tool)
     df_kmer_freq = None
     for i, kmer_k in enumerate(kmer_ks):
         df_curr = count_kmers(split_fasta, kmers_operation_dir, k=kmer_k, tool=kmer_counter_tool)
@@ -91,7 +93,7 @@ def create_dataset(
     assert df_kmer_freq is not None, "No k-mer k values provided"
 
     # 06. Create a dataset with the initial cluster information
-    click.secho(">> Creating a dataset with the initial cluster information...", fg="green", bold=True)
+    logger.info(">> Creating a dataset with the initial cluster information...")
     indexed_seed_clusters = zip(seed_clusters, range(len(seed_clusters)))
     df_seed_clusters = pd.DataFrame.from_records(indexed_seed_clusters, columns=["PARENT_NAME", "CLUSTER"])
     df_sub_contig = pd.DataFrame.from_records(list(sub_contigs.items()), columns=["CONTIG_NAME", "PARENT_NAME"])
@@ -100,14 +102,14 @@ def create_dataset(
     df_initial_clusters["CLUSTER"] = df_initial_clusters["CLUSTER"].astype(int)
 
     # 07. Merge all the features
-    click.secho(">> Merging all the features...", fg="green", bold=True)
+    logger.info(">> Merging all the features...")
     df_merged = pd.merge(df_initial_clusters, df_kmer_freq)
     df_merged = pd.merge(df_merged, df_coverages, left_on="PARENT_NAME", right_on="CONTIG_NAME")
     df_merged = df_merged.rename(columns={"CONTIG_NAME_x": "CONTIG_NAME"})
     df_merged = df_merged.drop("CONTIG_NAME_y", axis=1)
     df_merged.to_csv(output_dataset_csv, index=False)
-    click.secho(f"Generated csv with shape {df_merged.shape}", bold=True)
-    click.secho(f"Dumped features CSV at {output_dataset_csv}", bold=True)
+    logger.info("Generated csv with shape %s...", df_merged.shape)
+    logger.info("Dumped features CSV at %s...", output_dataset_csv)
 
     return output_dataset_csv
 

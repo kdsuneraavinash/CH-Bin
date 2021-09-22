@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import click
@@ -5,8 +6,9 @@ import numpy as np
 
 from ch_bin.cli.clustering import run_perform_clustering
 from ch_bin.cli.features import run_create_dataset
-from ch_bin.cli.utils import handle_error
-from ch_bin.core.config import USER_CONFIG
+from ch_bin.core.config import USER_CONFIG, initialize_logger
+
+logger = logging.getLogger(__name__)
 
 
 @click.command()
@@ -16,17 +18,19 @@ from ch_bin.core.config import USER_CONFIG
 @click.option("-o", "--out", help="The output directory for the tool.", type=Path, default=Path("out"))
 def run(config: Path, contigs: Path, coverages: Path, out: Path):
     try:
+        initialize_logger()
         np.random.seed(0)
         USER_CONFIG.read(config)
         parameters = USER_CONFIG["PARAMETERS"]
         features_out = out / "features"
         clustering_out = out / "clustering"
+        logger.debug("Parameters read: %s", dict(parameters))
 
         features_csv = run_create_dataset(contigs, coverages, features_out, parameters)
         dist_bin_csv = run_perform_clustering(contigs, features_csv, clustering_out, parameters, None)
-        click.secho(f"Final Binning CSV is at {dist_bin_csv}", bold=True)
+        logger.info("Final Binning CSV is at %s", dist_bin_csv)
     except Exception as e:
-        handle_error(e)
+        logger.exception(str(e), exc_info=e)
 
 
 if __name__ == "__main__":

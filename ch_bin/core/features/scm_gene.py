@@ -1,6 +1,8 @@
 """
 Module containing all the utilities and functions
 that are used for single-copy marker gene analysis.
+
+TODO: Add logging.
 """
 
 import math
