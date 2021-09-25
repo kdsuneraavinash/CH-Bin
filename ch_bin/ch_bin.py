@@ -27,7 +27,7 @@ def run(config: Path, contigs: Path, coverages: Path, out: Path):
         logger.debug("Parameters read: %s", dict(parameters))
 
         features_csv = run_create_dataset(contigs, coverages, features_out, parameters)
-        dist_bin_csv = run_perform_clustering(contigs, features_csv, clustering_out, parameters, None)
+        dist_bin_csv = run_perform_clustering(contigs, features_csv, clustering_out, parameters)
         logger.info("Final Binning CSV is at %s", dist_bin_csv)
     except Exception as e:
         logger.exception(str(e), exc_info=e)

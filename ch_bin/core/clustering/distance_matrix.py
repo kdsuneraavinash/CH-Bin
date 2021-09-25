@@ -15,8 +15,12 @@ def create_distance_matrix(arr: np.ndarray, operating_dir: Path) -> Path:
     The (i,j) element of matrix will have the euclidean distance from ith point to the jth point.
     """
     n = len(arr)
-    start_time = time.time()
     filename = operating_dir / "distance_matrix.npy"
+    if filename.exists():
+        logger.info("Reusing already existing distance matrix at %s.", filename)
+        logger.debug("Assuming memmap shape %s", (n, n))
+        return filename
+    start_time = time.time()
     logger.debug("Started creating distance matrix at %s.", filename)
     result = open_memmap(filename=filename, mode="w+", shape=(n, n))
     cdist(arr, arr, metric="euclidean", out=result)
