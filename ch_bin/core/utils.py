@@ -1,3 +1,4 @@
+import logging
 import os
 import pstats
 import subprocess
@@ -5,6 +6,8 @@ from cProfile import Profile
 from functools import wraps
 from pathlib import Path
 from typing import List, Optional, Union
+
+logger = logging.getLogger(__name__)
 
 
 def run_command(*command: Union[str, Path], env_paths: Optional[List[str]] = None) -> None:
@@ -18,6 +21,7 @@ def run_command(*command: Union[str, Path], env_paths: Optional[List[str]] = Non
     if env_paths is not None:
         env_paths.append(environment["PATH"])
         environment["PATH"] = ":".join(env_paths)
+    logger.debug("Running %s with environment %s", command, environment)
     process = subprocess.Popen(command, env=environment)
     process.communicate()
     if process.returncode != 0:
