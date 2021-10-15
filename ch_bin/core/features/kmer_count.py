@@ -78,7 +78,7 @@ def _seq2vec_count_kmers(contig_fasta: Path, operating_dir: Path, k: int = 4) ->
     # 01. Run the seq2vec tool
     kmer_command_dir = USER_CONFIG["COMMANDS"]["Seq2Vec"]
     kmer_count_txt = operating_dir / "count.txt"
-    kmer_count_csv = operating_dir / "normalized_kmer.csv"
+    kmer_count_csv = operating_dir / f"normalized_kmer_{k}.csv"
 
     # Run the tool if not previously run
     if not kmer_count_csv.exists():
