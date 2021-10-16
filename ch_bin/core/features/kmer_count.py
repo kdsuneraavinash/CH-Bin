@@ -80,14 +80,17 @@ def _seq2vec_count_kmers(contig_fasta: Path, operating_dir: Path, k: int = 4) ->
     kmer_count_txt = operating_dir / "count.txt"
     kmer_count_csv = operating_dir / f"normalized_kmer_{k}.csv"
 
+    if kmer_count_csv.exists():
+        logger.info("Found previous run, skipping seq2vec for k=%s.", k)
+        return pd.read_csv(kmer_count_csv)
+
     # Run the tool if not previously run
-    if not kmer_count_csv.exists():
-        logger.debug("%s not found.", kmer_count_csv)
-        arguments: List[Union[str, Path]] = ["seq2vec"]
-        arguments.extend(["-f", contig_fasta])
-        arguments.extend(["-o", kmer_count_txt])
-        arguments.extend(["-k", str(k)])
-        run_command(*arguments, env_paths=[kmer_command_dir])
+    logger.debug("%s not found.", kmer_count_csv)
+    arguments: List[Union[str, Path]] = ["seq2vec"]
+    arguments.extend(["-f", contig_fasta])
+    arguments.extend(["-o", kmer_count_txt])
+    arguments.extend(["-k", str(k)])
+    run_command(*arguments, env_paths=[kmer_command_dir])
 
     contig_names = []
     with open(contig_fasta, mode="r") as fr:
