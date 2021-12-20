@@ -2,7 +2,7 @@
 Module containing all the utilities and functions
 that are used for kmer counting based operations.
 """
-
+import logging
 from pathlib import Path
 from typing import Any, Dict, List, Union
 
@@ -11,6 +11,8 @@ from Bio import SeqIO
 
 from ch_bin.core.config import USER_CONFIG
 from ch_bin.core.utils import run_command
+
+logger = logging.getLogger(__name__)
 
 
 def _kmer_counter_count_kmers(contig_fasta: Path, operating_dir: Path, k: int = 4) -> pd.DataFrame:
@@ -23,6 +25,8 @@ def _kmer_counter_count_kmers(contig_fasta: Path, operating_dir: Path, k: int = 
     :param operating_dir: Directory to write temp files to.
     :return: Dataset containing contig name and normalized k-mer counts.
     """
+
+    logger.warning("kmer-counter mode is deprecated. Use seq2vec instead.")
 
     # 01. Run the kmer counter tool
     kmer_command_dir = USER_CONFIG["COMMANDS"]["KMerCounter"]
@@ -69,10 +73,19 @@ def _seq2vec_count_kmers(contig_fasta: Path, operating_dir: Path, k: int = 4) ->
     :return: Dataset containing contig name and normalized k-mer counts.
     """
 
+    logger.debug("Running seq2vec for kmer-counting.")
+
     # 01. Run the seq2vec tool
     kmer_command_dir = USER_CONFIG["COMMANDS"]["Seq2Vec"]
     kmer_count_txt = operating_dir / "count.txt"
-    kmer_count_csv = operating_dir / "normalized_kmer.csv"
+    kmer_count_csv = operating_dir / f"normalized_kmer_{k}.csv"
+
+    if kmer_count_csv.exists():
+        logger.info("Found previous run, skipping seq2vec for k=%s.", k)
+        return pd.read_csv(kmer_count_csv)
+
+    # Run the tool if not previously run
+    logger.debug("%s not found.", kmer_count_csv)
     arguments: List[Union[str, Path]] = ["seq2vec"]
     arguments.extend(["-f", contig_fasta])
     arguments.extend(["-o", kmer_count_txt])
@@ -83,11 +96,13 @@ def _seq2vec_count_kmers(contig_fasta: Path, operating_dir: Path, k: int = 4) ->
     with open(contig_fasta, mode="r") as fr:
         for record in SeqIO.parse(fr, "fasta"):
             contig_names.append(record.id)
+    logger.debug("Found %s contig names in contig file.", len(contig_names))
 
     # 02. Read the tool output text file
     df_kmer_count = pd.read_csv(kmer_count_txt, sep=" ", header=None)
     df_kmer_count["CONTIG_NAME"] = contig_names
     df_kmer_count.to_csv(kmer_count_csv, index=False)  # noqa
+    logger.debug("Read %s and saved kmer-count output to %s.", kmer_count_txt, kmer_count_csv)
 
     return df_kmer_count
 
