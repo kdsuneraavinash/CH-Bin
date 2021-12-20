@@ -14,6 +14,8 @@ cd CH-Bin
 You will need python and build requirements (and optionally venv). In ubuntu 20.04, you can install them by,
 
 ```bash
+sudo apt-get update
+sudo apt-get install cmake
 sudo apt-get install build-essential
 sudo apt-get install python3 python-is-python3
 sudo apt-get install python3-dev
@@ -41,7 +43,7 @@ and [seq2vec](https://github.com/anuradhawick/seq2vec) tools are required. If yo
 3. Install [seq2vec](https://github.com/anuradhawick/seq2vec).
     ```bash
     git clone https://github.com/anuradhawick/seq2vec.git tools/seq2vec
-    cd tools/seq2vec/ && mkdir build && cmake . && make -j8 && cd ../..
+    cd tools/seq2vec/ && mkdir -p build && cmake . && make -j8 && cd ../..
     ./tools/seq2vec/seq2vec --help
     ```
 
