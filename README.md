@@ -46,6 +46,11 @@ and [seq2vec](https://github.com/anuradhawick/seq2vec) tools are required. If yo
     cd tools/seq2vec/ && mkdir -p build && cmake . && make -j8 && cd ../..
     ./tools/seq2vec/seq2vec --help
     ```
+4. Get marker-gene hmm file.
+    ```bash
+    wget -O tools/marker.hmm -nc https://raw.githubusercontent.com/sufforest/SolidBin/4c9b9ea7b8d8a0df1b772669872b69006c490e67/auxiliary/marker.hmm
+    head ./tools/marker.hmm
+    ```
 
 If you installed them in a different directory than `tools`, you need to update the configuration. Edit `config/default.ini` as follows, (If you followed the default installation commands provided above, you do not need to change the configuration.)
 
