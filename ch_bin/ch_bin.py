@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import Optional
 
 import click
 import numpy as np
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 @click.command()
 @click.option("-i", "--contigs", required=True, help="The contig file to perform the binning operation.", type=Path)
-@click.option("-c", "--coverages", required=True, help="The tab-seperated file with abundance data.", type=Path)
+@click.option("-c", "--coverages", help="The tab-seperated file with abundance data.", type=Optional[Path])
 @click.option("-s", "--config", help="The configuration file path.", type=Path, default=Path("config/default.ini"))
 @click.option("-o", "--out", help="The output directory for the tool.", type=Path, default=Path("out"))
 def run(config: Path, contigs: Path, coverages: Path, out: Path):
