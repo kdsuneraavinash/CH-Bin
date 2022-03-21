@@ -1,7 +1,7 @@
 import logging
 from configparser import SectionProxy
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import pandas as pd
 
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 def create_dataset(
     contig_fasta: Path,
-    coverage_file: Path,
+    coverage_file: Optional[Path],
     operating_dir: Path,
     kmer_ks: List[int],
     kmer_counter_tool: str = "kmer_counter",
@@ -54,8 +54,9 @@ def create_dataset(
     scm_operation_dir.mkdir(parents=True, exist_ok=True)
 
     # 01. Calculate coverages
-    logger.info(">> Calculating coverages...")
-    df_coverages = parse_coverages(coverage_file)
+    if coverage_file is not None:
+        logger.info(">> Calculating coverages...")
+        df_coverages = parse_coverages(coverage_file)
 
     # 02. Remove short contigs
     logger.info(">> Removing contigs shorter than %s bp.", short_contig_threshold)
@@ -104,9 +105,10 @@ def create_dataset(
     # 07. Merge all the features
     logger.info(">> Merging all the features...")
     df_merged = pd.merge(df_initial_clusters, df_kmer_freq)
-    df_merged = pd.merge(df_merged, df_coverages, left_on="PARENT_NAME", right_on="CONTIG_NAME")
-    df_merged = df_merged.rename(columns={"CONTIG_NAME_x": "CONTIG_NAME"})
-    df_merged = df_merged.drop("CONTIG_NAME_y", axis=1)
+    if coverage_file is not None:
+        df_merged = pd.merge(df_merged, df_coverages, left_on="PARENT_NAME", right_on="CONTIG_NAME")
+        df_merged = df_merged.rename(columns={"CONTIG_NAME_x": "CONTIG_NAME"})
+        df_merged = df_merged.drop("CONTIG_NAME_y", axis=1)
     df_merged.to_csv(output_dataset_csv, index=False)
     logger.info("Generated csv with shape %s...", df_merged.shape)
     logger.info("Dumped features CSV at %s...", output_dataset_csv)
@@ -114,7 +116,9 @@ def create_dataset(
     return output_dataset_csv
 
 
-def run_create_dataset(contig_fasta: Path, coverage_file: Path, operating_dir: Path, parameters: SectionProxy) -> Path:
+def run_create_dataset(
+    contig_fasta: Path, coverage_file: Optional[Path], operating_dir: Path, parameters: SectionProxy
+) -> Path:
     """
     Create a dataset using the given input and configuration.
 
