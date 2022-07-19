@@ -43,7 +43,7 @@ def nearest_positive_definite(mat_a: np.ndarray) -> np.ndarray:
     k = 1
     while not is_positive_definite(mat_a3):
         mineig = np.min(np.real(np.linalg.eigvals(mat_a3)))
-        mat_a3 += mat_i * (-mineig * k ** 2 + spacing)
+        mat_a3 += mat_i * (-mineig * k**2 + spacing)
         k += 1
     return mat_a3
 
